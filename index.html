@@ -1,0 +1,5760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#3f7655">
+<meta name="description" content="Reading Garden — your personal cloud reading tracker">
+<title>Reading Garden</title>
+
+<style>
+:root{
+  --bg:#fffaf1;
+  --bg2:#f6f0e3;
+  --surface:#ffffff;
+  --surface2:#f3f7ef;
+  --text:#26372c;
+  --muted:#718074;
+  --primary:#3f7655;
+  --primary-dark:#2d5d40;
+  --green:#78a96b;
+  --rose:#e78c91;
+  --yellow:#efc65b;
+  --lavender:#9b8bc5;
+  --blue:#6caac1;
+  --peach:#e5a074;
+  --border:#e4e7dd;
+  --danger:#c95757;
+  --shadow:0 12px 35px rgba(49,76,54,.08);
+  --radius:20px;
+}
+
+[data-theme="dark"]{
+  --bg:#101711;
+  --bg2:#172019;
+  --surface:#1c251e;
+  --surface2:#253128;
+  --text:#eef5ef;
+  --muted:#a3b1a5;
+  --border:#354238;
+  --shadow:0 16px 40px rgba(0,0,0,.28);
+}
+
+*{
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(120,169,107,.12),transparent 25%),
+    radial-gradient(circle at 90% 10%,rgba(231,140,145,.10),transparent 24%),
+    var(--bg);
+  color:var(--text);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+button,
+input,
+select,
+textarea{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+.hidden{
+  display:none!important;
+}
+
+#loading{
+  position:fixed;
+  inset:0;
+  background:var(--bg);
+  display:grid;
+  place-items:center;
+  z-index:9999;
+}
+
+.loading-box{
+  text-align:center;
+}
+
+.loading-logo{
+  width:75px;
+  height:75px;
+  border-radius:25px;
+  display:grid;
+  place-items:center;
+  margin:auto auto 15px;
+  background:linear-gradient(135deg,var(--primary),var(--green));
+  color:#fff;
+  font-size:38px;
+  box-shadow:0 18px 45px rgba(63,118,85,.25);
+}
+
+.spinner{
+  width:25px;
+  height:25px;
+  border:3px solid rgba(63,118,85,.2);
+  border-top-color:var(--primary);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+  margin:18px auto 0;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+/* ============================================================
+   AUTH
+============================================================ */
+
+.auth-screen{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:1.15fr .85fr;
+  background:var(--bg);
+}
+
+.auth-art{
+  position:relative;
+  overflow:hidden;
+  min-height:100vh;
+  padding:55px;
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  background:
+    radial-gradient(circle at 15% 20%,rgba(255,255,255,.18),transparent 18%),
+    radial-gradient(circle at 80% 70%,rgba(255,255,255,.13),transparent 25%),
+    linear-gradient(145deg,#2f6546,#6f9d6b);
+}
+
+.auth-art:before,
+.auth-art:after{
+  content:"";
+  position:absolute;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.14);
+}
+
+.auth-art:before{
+  width:500px;
+  height:500px;
+  right:-180px;
+  top:-180px;
+}
+
+.auth-art:after{
+  width:380px;
+  height:380px;
+  left:-180px;
+  bottom:-160px;
+}
+
+.auth-brand{
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:center;
+  gap:13px;
+}
+
+.auth-brand-logo{
+  width:48px;
+  height:48px;
+  display:grid;
+  place-items:center;
+  border-radius:15px;
+  background:rgba(255,255,255,.18);
+  backdrop-filter:blur(10px);
+  font-size:25px;
+}
+
+.auth-art-content{
+  position:relative;
+  z-index:2;
+  max-width:620px;
+}
+
+.auth-art h1{
+  font-size:clamp(42px,6vw,76px);
+  line-height:.95;
+  margin:0 0 25px;
+  letter-spacing:-.05em;
+}
+
+.auth-art p{
+  font-size:18px;
+  line-height:1.7;
+  max-width:520px;
+  opacity:.9;
+}
+
+.garden-icons{
+  font-size:42px;
+  letter-spacing:8px;
+  margin-top:30px;
+}
+
+.auth-card-wrap{
+  display:grid;
+  place-items:center;
+  padding:30px;
+}
+
+.auth-card{
+  width:min(430px,100%);
+}
+
+.auth-card h2{
+  margin:0 0 8px;
+  font-size:31px;
+}
+
+.auth-subtitle{
+  color:var(--muted);
+  margin-bottom:28px;
+}
+
+.auth-form{
+  display:grid;
+  gap:16px;
+}
+
+.field{
+  display:grid;
+  gap:7px;
+}
+
+.field label{
+  font-size:13px;
+  font-weight:650;
+}
+
+.field input,
+.field select,
+.field textarea{
+  width:100%;
+  padding:13px 14px;
+  border:1px solid var(--border);
+  border-radius:13px;
+  background:var(--surface);
+  color:var(--text);
+  outline:none;
+  transition:.15s;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 4px rgba(63,118,85,.10);
+}
+
+.password-wrap{
+  position:relative;
+}
+
+.password-wrap input{
+  padding-right:50px;
+}
+
+.password-toggle{
+  position:absolute;
+  right:8px;
+  top:7px;
+  border:0;
+  background:transparent;
+  width:38px;
+  height:38px;
+  border-radius:10px;
+}
+
+.auth-button{
+  border:0;
+  padding:14px;
+  border-radius:13px;
+  background:linear-gradient(135deg,var(--primary),var(--green));
+  color:#fff;
+  font-weight:750;
+  box-shadow:0 12px 25px rgba(63,118,85,.2);
+}
+
+.auth-button:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
+
+.auth-links{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:5px;
+}
+
+.link-button{
+  border:0;
+  background:transparent;
+  color:var(--primary);
+  font-weight:650;
+  padding:3px;
+}
+
+.auth-message{
+  padding:11px 13px;
+  border-radius:12px;
+  font-size:13px;
+  display:none;
+}
+
+.auth-message.show{
+  display:block;
+}
+
+.auth-message.error{
+  background:#fdeaea;
+  color:#9f3838;
+}
+
+.auth-message.success{
+  background:#e7f5e9;
+  color:#346b3f;
+}
+
+/* ============================================================
+   APP
+============================================================ */
+
+.app{
+  min-height:100vh;
+  display:flex;
+}
+
+.sidebar{
+  position:fixed;
+  inset:0 auto 0 0;
+  width:260px;
+  padding:23px 16px;
+  background:rgba(255,255,255,.91);
+  backdrop-filter:blur(18px);
+  border-right:1px solid var(--border);
+  z-index:100;
+}
+
+[data-theme="dark"] .sidebar{
+  background:rgba(28,37,30,.94);
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:0 9px;
+  margin-bottom:30px;
+}
+
+.brand-logo{
+  width:44px;
+  height:44px;
+  display:grid;
+  place-items:center;
+  border-radius:14px;
+  color:#fff;
+  background:linear-gradient(135deg,var(--primary),var(--green));
+  box-shadow:0 9px 20px rgba(63,118,85,.17);
+}
+
+.brand strong{
+  display:block;
+  font-size:16px;
+}
+
+.brand small{
+  color:var(--muted);
+  font-size:11px;
+}
+
+.nav{
+  display:grid;
+  gap:5px;
+}
+
+.nav button{
+  width:100%;
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  border-radius:13px;
+  padding:12px 13px;
+  display:flex;
+  align-items:center;
+  gap:11px;
+  text-align:left;
+  transition:.15s;
+}
+
+.nav button:hover{
+  background:var(--surface2);
+  color:var(--primary);
+}
+
+.nav button.active{
+  color:var(--primary);
+  background:linear-gradient(
+    90deg,
+    rgba(63,118,85,.13),
+    rgba(120,169,107,.08)
+  );
+  font-weight:750;
+}
+
+.sidebar-bottom{
+  position:absolute;
+  left:16px;
+  right:16px;
+  bottom:20px;
+}
+
+.user-mini{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:11px;
+  margin-bottom:10px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:var(--surface2);
+}
+
+.avatar{
+  width:35px;
+  height:35px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  color:#fff;
+  font-weight:750;
+  background:linear-gradient(135deg,var(--rose),var(--lavender));
+}
+
+.user-mini-text{
+  min-width:0;
+  flex:1;
+}
+
+.user-mini-text strong,
+.user-mini-text small{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.user-mini-text small{
+  color:var(--muted);
+  font-size:10px;
+}
+
+.main{
+  margin-left:260px;
+  width:calc(100% - 260px);
+  min-height:100vh;
+}
+
+.topbar{
+  height:75px;
+  position:sticky;
+  top:0;
+  z-index:50;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 30px;
+  background:rgba(255,255,255,.87);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+}
+
+[data-theme="dark"] .topbar{
+  background:rgba(16,23,17,.87);
+}
+
+.topbar-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.topbar h1{
+  margin:0;
+  font-size:21px;
+}
+
+.top-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.icon-btn{
+  width:40px;
+  height:40px;
+  display:grid;
+  place-items:center;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--surface);
+  color:var(--text);
+}
+
+.content{
+  width:min(1500px,100%);
+  padding:28px;
+  margin:auto;
+}
+
+.page{
+  display:none;
+}
+
+.page.active{
+  display:block;
+}
+
+/* ============================================================
+   COMPONENTS
+============================================================ */
+
+.btn{
+  border:0;
+  border-radius:12px;
+  padding:10px 14px;
+  font-weight:700;
+  transition:.15s;
+}
+
+.btn:hover{
+  transform:translateY(-1px);
+}
+
+.btn-primary{
+  color:#fff;
+  background:linear-gradient(135deg,var(--primary),var(--green));
+}
+
+.btn-secondary{
+  color:var(--text);
+  background:var(--surface2);
+}
+
+.btn-danger{
+  color:#a43838;
+  background:#fde8e8;
+}
+
+.btn-small{
+  padding:7px 9px;
+  font-size:12px;
+}
+
+.hero{
+  position:relative;
+  overflow:hidden;
+  padding:30px;
+  margin-bottom:21px;
+  border-radius:25px;
+  color:#fff;
+  background:
+    radial-gradient(circle at 80% 0%,rgba(255,255,255,.16),transparent 25%),
+    linear-gradient(135deg,#315f42,#74a16e);
+  box-shadow:0 18px 45px rgba(63,118,85,.15);
+}
+
+.hero:after{
+  content:"🌿";
+  position:absolute;
+  right:35px;
+  bottom:-45px;
+  font-size:150px;
+  opacity:.14;
+}
+
+.hero h2{
+  position:relative;
+  z-index:1;
+  margin:0 0 7px;
+  font-size:29px;
+}
+
+.hero p{
+  position:relative;
+  z-index:1;
+  margin:0;
+  opacity:.88;
+}
+
+.grid{
+  display:grid;
+  gap:17px;
+}
+
+.stats{
+  grid-template-columns:repeat(5,1fr);
+  margin-bottom:17px;
+}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+
+.stat{
+  padding:19px;
+  position:relative;
+  overflow:hidden;
+}
+
+.stat:nth-child(1){
+  border-top:4px solid var(--green);
+}
+
+.stat:nth-child(2){
+  border-top:4px solid var(--rose);
+}
+
+.stat:nth-child(3){
+  border-top:4px solid var(--yellow);
+}
+
+.stat:nth-child(4){
+  border-top:4px solid var(--blue);
+}
+
+.stat:nth-child(5){
+  border-top:4px solid var(--lavender);
+}
+
+.stat-icon{
+  float:right;
+  font-size:23px;
+}
+
+.stat-label{
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:8px;
+}
+
+.stat-value{
+  font-size:27px;
+  font-weight:800;
+}
+
+.two{
+  grid-template-columns:1.35fr .65fr;
+}
+
+.section-card{
+  padding:21px;
+}
+
+.section-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:17px;
+}
+
+.section-title h3{
+  margin:0;
+  font-size:17px;
+}
+
+.books{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:16px;
+}
+
+.book{
+  overflow:hidden;
+  border:1px solid var(--border);
+  border-radius:17px;
+  background:var(--surface);
+  transition:.2s;
+}
+
+.book:hover{
+  transform:translateY(-3px);
+  box-shadow:var(--shadow);
+}
+
+.cover{
+  height:235px;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  color:#fff;
+  background:
+    radial-gradient(circle at 20% 15%,rgba(255,255,255,.25),transparent 22%),
+    linear-gradient(145deg,var(--primary),var(--lavender));
+}
+
+.cover img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.cover-placeholder{
+  padding:20px;
+  text-align:center;
+  font-size:20px;
+  font-weight:800;
+}
+
+.book-body{
+  padding:14px;
+}
+
+.book-title{
+  margin:10px 0 3px;
+  font-weight:800;
+  line-height:1.3;
+}
+
+.book-author{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.badge{
+  display:inline-flex;
+  padding:5px 8px;
+  border-radius:999px;
+  color:var(--primary);
+  background:var(--surface2);
+  font-size:10px;
+  font-weight:800;
+}
+
+.progress{
+  height:7px;
+  margin:11px 0 5px;
+  overflow:hidden;
+  border-radius:999px;
+  background:var(--bg2);
+}
+
+.progress span{
+  display:block;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,var(--primary),var(--green));
+}
+
+.book-meta{
+  display:flex;
+  justify-content:space-between;
+  color:var(--muted);
+  font-size:10px;
+}
+
+.book-actions{
+  display:flex;
+  gap:6px;
+  margin-top:12px;
+}
+
+.book-actions .btn{
+  flex:1;
+}
+
+.toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin-bottom:18px;
+}
+
+.search{
+  flex:1;
+  min-width:220px;
+}
+
+input,
+select,
+textarea{
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:var(--text);
+  border-radius:11px;
+  padding:11px 12px;
+  outline:none;
+}
+
+textarea{
+  min-height:100px;
+  resize:vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 4px rgba(63,118,85,.08);
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+}
+
+.form-label{
+  display:grid;
+  gap:6px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.full{
+  grid-column:1/-1;
+}
+
+.modal{
+  position:fixed;
+  inset:0;
+  z-index:500;
+  display:none;
+  place-items:center;
+  padding:20px;
+  background:rgba(14,25,17,.58);
+  backdrop-filter:blur(6px);
+}
+
+.modal.open{
+  display:grid;
+}
+
+.modal-box{
+  width:min(760px,100%);
+  max-height:90vh;
+  overflow:auto;
+  padding:25px;
+  border-radius:23px;
+  background:var(--surface);
+  box-shadow:0 30px 90px rgba(0,0,0,.28);
+}
+
+.modal-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.modal-head h2{
+  margin:0;
+}
+
+.close{
+  width:37px;
+  height:37px;
+  border:0;
+  border-radius:11px;
+  background:var(--surface2);
+  color:var(--text);
+  font-size:20px;
+}
+
+.modal-foot{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:20px;
+}
+
+.empty{
+  padding:35px 15px;
+  text-align:center;
+  color:var(--muted);
+}
+
+.session-list{
+  display:grid;
+  gap:9px;
+}
+
+.session{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:13px;
+  border:1px solid var(--border);
+  border-radius:13px;
+  background:var(--surface);
+}
+
+.muted{
+  color:var(--muted);
+}
+
+.goal{
+  padding:17px;
+  margin-bottom:10px;
+  border:1px solid var(--border);
+  border-radius:14px;
+}
+
+.goal-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.goal-name{
+  font-weight:800;
+}
+
+.chart{
+  height:190px;
+  display:flex;
+  align-items:end;
+  gap:7px;
+  padding:10px 0 25px;
+}
+
+.bar{
+  position:relative;
+  flex:1;
+  min-height:4px;
+  border-radius:7px 7px 2px 2px;
+  background:linear-gradient(var(--green),var(--primary));
+}
+
+.bar small{
+  position:absolute;
+  bottom:-22px;
+  width:100%;
+  text-align:center;
+  color:var(--muted);
+  font-size:9px;
+}
+
+.calendar{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+}
+
+.cal-head{
+  padding:5px;
+  color:var(--muted);
+  text-align:center;
+  font-size:10px;
+}
+
+.day{
+  min-height:65px;
+  padding:7px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  font-size:11px;
+}
+
+.day.read{
+  background:rgba(120,169,107,.13);
+  border-color:rgba(120,169,107,.35);
+}
+
+.day .minutes{
+  margin-top:5px;
+  color:var(--primary);
+  font-size:9px;
+}
+
+.timer{
+  text-align:center;
+  padding:25px;
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(120,169,107,.16),transparent 45%),
+    var(--surface2);
+}
+
+.timer-time{
+  font-size:58px;
+  font-weight:850;
+  letter-spacing:-.05em;
+  margin:15px 0;
+}
+
+.timer-book{
+  color:var(--muted);
+}
+
+.toast{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  z-index:1000;
+  max-width:350px;
+  padding:13px 17px;
+  border-radius:13px;
+  color:#fff;
+  background:#26372c;
+  box-shadow:0 15px 35px rgba(0,0,0,.2);
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(10px);
+  transition:.2s;
+}
+
+.toast.show{
+  opacity:1;
+  transform:none;
+}
+
+.mobile-menu{
+  display:none;
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+
+@media(max-width:1100px){
+
+  .stats{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .two{
+    grid-template-columns:1fr;
+  }
+
+}
+
+@media(max-width:780px){
+
+  .auth-screen{
+    grid-template-columns:1fr;
+  }
+
+  .auth-art{
+    display:none;
+  }
+
+  .sidebar{
+    transform:translateX(-105%);
+    transition:.22s;
+  }
+
+  .sidebar.open{
+    transform:none;
+  }
+
+  .main{
+    width:100%;
+    margin-left:0;
+  }
+
+  .mobile-menu{
+    display:grid;
+  }
+
+  .topbar{
+    padding:0 15px;
+  }
+
+  .topbar .btn-primary{
+    display:none;
+  }
+
+  .content{
+    padding:18px 14px 90px;
+  }
+
+  .stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .books{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:11px;
+  }
+
+  .cover{
+    height:210px;
+  }
+
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .full{
+    grid-column:auto;
+  }
+
+  .bottom-nav{
+    position:fixed;
+    z-index:80;
+    left:10px;
+    right:10px;
+    bottom:10px;
+    display:flex;
+    justify-content:space-around;
+    padding:8px;
+    border:1px solid var(--border);
+    border-radius:18px;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(18px);
+    box-shadow:var(--shadow);
+  }
+
+  [data-theme="dark"] .bottom-nav{
+    background:rgba(28,37,30,.94);
+  }
+
+  .bottom-nav button{
+    border:0;
+    background:transparent;
+    color:var(--muted);
+    padding:6px 10px;
+    font-size:10px;
+  }
+
+  .bottom-nav button.active{
+    color:var(--primary);
+    font-weight:800;
+  }
+
+}
+
+@media(max-width:480px){
+
+  .books{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .cover{
+    height:185px;
+  }
+
+  .book-actions{
+    flex-direction:column;
+  }
+
+  .hero{
+    padding:23px;
+  }
+
+  .hero h2{
+    font-size:23px;
+  }
+
+  .timer-time{
+    font-size:45px;
+  }
+
+}
+</style>
+</head>
+
+<body>
+
+<div id="loading">
+  <div class="loading-box">
+    <div class="loading-logo">🌱</div>
+    <strong>Reading Garden</strong>
+    <div class="spinner"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     AUTH SCREEN
+============================================================ -->
+
+<section id="authScreen" class="auth-screen hidden">
+
+  <div class="auth-art">
+
+    <div class="auth-brand">
+      <div class="auth-brand-logo">🌱</div>
+      <strong>Reading Garden</strong>
+    </div>
+
+    <div class="auth-art-content">
+      <h1>Grow your reading.</h1>
+
+      <p>
+        Your books, reading sessions, goals, notes and
+        favorite passages — beautifully organized and
+        available wherever you go.
+      </p>
+
+      <div class="garden-icons">
+        📚 🌿 🌸 🌼 🪻
+      </div>
+    </div>
+
+    <small>
+      One page at a time. One book at a time.
+    </small>
+
+  </div>
+
+  <div class="auth-card-wrap">
+
+    <div class="auth-card">
+
+      <h2 id="authTitle">Welcome back</h2>
+
+      <p class="auth-subtitle" id="authSubtitle">
+        Sign in to continue growing your garden.
+      </p>
+
+      <div id="authMessage" class="auth-message"></div>
+
+      <form id="authForm" class="auth-form">
+
+        <div class="field" id="nameField" style="display:none">
+          <label for="authName">Your name</label>
+          <input
+            id="authName"
+            autocomplete="name"
+            placeholder="How should Reading Garden call you?"
+          >
+        </div>
+
+        <div class="field">
+          <label for="authEmail">Email</label>
+          <input
+            id="authEmail"
+            type="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+            required
+          >
+        </div>
+
+        <div class="field" id="passwordField">
+          <label for="authPassword">Password</label>
+
+          <div class="password-wrap">
+            <input
+              id="authPassword"
+              type="password"
+              autocomplete="current-password"
+              minlength="6"
+              placeholder="At least 6 characters"
+              required
+            >
+
+            <button
+              type="button"
+              class="password-toggle"
+              id="passwordToggle"
+            >👁</button>
+          </div>
+        </div>
+
+        <button class="auth-button" id="authSubmit">
+          Sign In
+        </button>
+
+      </form>
+
+      <div class="auth-links">
+
+        <button
+          class="link-button"
+          id="authModeToggle"
+        >
+          Create an account
+        </button>
+
+        <button
+          class="link-button"
+          id="forgotButton"
+        >
+          Forgot password?
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ============================================================
+     MAIN APPLICATION
+============================================================ -->
+
+<div id="appShell" class="app hidden">
+
+  <aside id="sidebar" class="sidebar">
+
+    <div class="brand">
+      <div class="brand-logo">🌱</div>
+
+      <div>
+        <strong>Reading Garden</strong>
+        <small>Grow your reading</small>
+      </div>
+    </div>
+
+    <nav class="nav">
+
+      <button class="active" data-page="dashboard">
+        🏡 <span>Dashboard</span>
+      </button>
+
+      <button data-page="library">
+        📚 <span>My Library</span>
+      </button>
+
+      <button data-page="sessions">
+        ⏱️ <span>Reading Sessions</span>
+      </button>
+
+      <button data-page="goals">
+        🎯 <span>Goals</span>
+      </button>
+
+      <button data-page="statistics">
+        📊 <span>Statistics</span>
+      </button>
+
+      <button data-page="calendar">
+        🗓️ <span>Reading Calendar</span>
+      </button>
+
+      <button data-page="notes">
+        📝 <span>Notes & Highlights</span>
+      </button>
+
+      <button data-page="profile">
+        👤 <span>Profile</span>
+      </button>
+
+    </nav>
+
+    <div class="sidebar-bottom">
+
+      <div class="user-mini">
+
+        <div class="avatar" id="sideAvatar">R</div>
+
+        <div class="user-mini-text">
+          <strong id="sideName">Reader</strong>
+          <small id="sideEmail">reader</small>
+        </div>
+
+      </div>
+
+      <button
+        class="btn btn-secondary"
+        style="width:100%"
+        id="logoutButton"
+      >
+        Sign Out
+      </button>
+
+    </div>
+
+  </aside>
+
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-left">
+
+        <button
+          class="icon-btn mobile-menu"
+          id="mobileMenuButton"
+        >
+          ☰
+        </button>
+
+        <h1 id="pageTitle">Dashboard</h1>
+
+      </div>
+
+      <div class="top-actions">
+
+        <button
+          class="icon-btn"
+          id="themeButton"
+          title="Toggle theme"
+        >
+          ☀️
+        </button>
+
+        <button
+          class="btn btn-primary"
+          id="topAddBook"
+        >
+          ＋ Add Book
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <section class="page active" id="page-dashboard">
+
+        <div class="hero">
+          <h2 id="welcomeText">
+            Welcome to your Reading Garden 🌿
+          </h2>
+
+          <p>
+            Every page you read is another seed planted.
+          </p>
+        </div>
+
+        <div class="grid stats">
+
+          <div class="card stat">
+            <span class="stat-icon">📚</span>
+            <div class="stat-label">Total Books</div>
+            <div class="stat-value" id="statBooks">0</div>
+          </div>
+
+          <div class="card stat">
+            <span class="stat-icon">📖</span>
+            <div class="stat-label">Currently Reading</div>
+            <div class="stat-value" id="statReading">0</div>
+          </div>
+
+          <div class="card stat">
+            <span class="stat-icon">🌳</span>
+            <div class="stat-label">Completed</div>
+            <div class="stat-value" id="statCompleted">0</div>
+          </div>
+
+          <div class="card stat">
+            <span class="stat-icon">📄</span>
+            <div class="stat-label">Pages Read</div>
+            <div class="stat-value" id="statPages">0</div>
+          </div>
+
+          <div class="card stat">
+            <span class="stat-icon">🔥</span>
+            <div class="stat-label">Reading Streak</div>
+            <div class="stat-value" id="statStreak">0</div>
+          </div>
+
+        </div>
+
+
+        <div class="grid two">
+
+          <div class="card section-card">
+
+            <div class="section-title">
+              <h3>🌿 Continue Growing</h3>
+
+              <button
+                class="btn btn-secondary btn-small"
+                onclick="showPage('library')"
+              >
+                Library
+              </button>
+            </div>
+
+            <div id="dashboardReading" class="books"></div>
+
+          </div>
+
+
+          <div class="card section-card">
+
+            <div class="section-title">
+              <h3>🎯 This Year's Goal</h3>
+            </div>
+
+            <div id="dashboardGoal"></div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="card section-card"
+          style="margin-top:17px"
+        >
+
+          <div class="section-title">
+            <h3>📖 Recent Reading</h3>
+          </div>
+
+          <div id="recentSessions"></div>
+
+        </div>
+
+      </section>
+
+
+      <!-- LIBRARY -->
+      <section class="page" id="page-library">
+
+        <div class="toolbar">
+
+          <input
+            id="bookSearch"
+            class="search"
+            placeholder="🔎 Search books, authors, genres..."
+          >
+
+          <select id="bookStatusFilter">
+            <option value="all">All books</option>
+            <option value="reading">Currently Reading</option>
+            <option value="want">Want to Read</option>
+            <option value="completed">Completed</option>
+            <option value="hold">On Hold</option>
+            <option value="dnf">Did Not Finish</option>
+          </select>
+
+          <select id="bookSort">
+            <option value="updated">Recently Updated</option>
+            <option value="title">Title</option>
+            <option value="author">Author</option>
+            <option value="rating">Rating</option>
+            <option value="progress">Progress</option>
+          </select>
+
+          <button
+            class="btn btn-primary"
+            id="libraryAdd"
+          >
+            ＋ Add Book
+          </button>
+
+        </div>
+
+
+        <div class="card section-card">
+
+          <div class="section-title">
+            <h3 id="libraryCount">My Library</h3>
+          </div>
+
+          <div id="libraryBooks" class="books"></div>
+
+        </div>
+
+      </section>
+
+
+      <!-- SESSIONS -->
+      <section class="page" id="page-sessions">
+
+        <div class="grid two">
+
+          <div class="card section-card">
+
+            <div class="section-title">
+              <h3>⏱️ Reading Timer</h3>
+            </div>
+
+            <div class="timer">
+
+              <div class="timer-book" id="timerBookName">
+                Select a book below
+              </div>
+
+              <div class="timer-time" id="timerDisplay">
+                00:00:00
+              </div>
+
+              <div style="display:flex;justify-content:center;gap:8px">
+
+                <button
+                  class="btn btn-primary"
+                  id="timerStart"
+                >
+                  Start
+                </button>
+
+                <button
+                  class="btn btn-secondary"
+                  id="timerStop"
+                >
+                  Finish
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="card section-card">
+
+            <div class="section-title">
+              <h3>Log Reading</h3>
+            </div>
+
+            <form id="sessionForm">
+
+              <div class="form-grid">
+
+                <label class="form-label">
+                  Book
+                  <select id="sessionBook" required></select>
+                </label>
+
+                <label class="form-label">
+                  Date
+                  <input
+                    type="date"
+                    id="sessionDate"
+                    required
+                  >
+                </label>
+
+                <label class="form-label">
+                  Pages
+                  <input
+                    type="number"
+                    id="sessionPages"
+                    min="0"
+                    value="10"
+                    required
+                  >
+                </label>
+
+                <label class="form-label">
+                  Minutes
+                  <input
+                    type="number"
+                    id="sessionMinutes"
+                    min="0"
+                    value="20"
+                    required
+                  >
+                </label>
+
+                <label class="form-label full">
+                  Notes
+                  <textarea
+                    id="sessionNotes"
+                    placeholder="What did you read today?"
+                  ></textarea>
+                </label>
+
+              </div>
+
+              <div class="modal-foot">
+                <button class="btn btn-primary">
+                  Save Session
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="card section-card"
+          style="margin-top:17px"
+        >
+
+          <div class="section-title">
+            <h3>Reading History</h3>
+          </div>
+
+          <div
+            id="sessionList"
+            class="session-list"
+          ></div>
+
+        </div>
+
+      </section>
+
+
+      <!-- GOALS -->
+      <section class="page" id="page-goals">
+
+        <div class="card section-card">
+
+          <div class="section-title">
+            <h3>🎯 Reading Goals</h3>
+          </div>
+
+          <form id="goalForm">
+
+            <div class="form-grid">
+
+              <label class="form-label">
+                Books this year
+                <input
+                  type="number"
+                  id="goalBooks"
+                  min="1"
+                  value="24"
+                >
+              </label>
+
+              <label class="form-label">
+                Pages this year
+                <input
+                  type="number"
+                  id="goalPages"
+                  min="1"
+                  value="5000"
+                >
+              </label>
+
+              <label class="form-label">
+                Minutes this year
+                <input
+                  type="number"
+                  id="goalMinutes"
+                  min="1"
+                  value="10000"
+                >
+              </label>
+
+            </div>
+
+            <div class="modal-foot">
+              <button class="btn btn-primary">
+                Save Goals
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+
+
+        <div
+          class="card section-card"
+          style="margin-top:17px"
+        >
+
+          <div class="section-title">
+            <h3>Goal Progress</h3>
+          </div>
+
+          <div id="goalProgress"></div>
+
+        </div>
+
+      </section>
+
+
+      <!-- STATISTICS -->
+      <section class="page" id="page-statistics">
+
+        <div class="grid stats">
+
+          <div class="card stat">
+            <div class="stat-label">Average Rating</div>
+            <div class="stat-value" id="avgRating">0</div>
+          </div>
+
+          <div class="card stat">
+            <div class="stat-label">Average Pages</div>
+            <div class="stat-value" id="avgPages">0</div>
+          </div>
+
+          <div class="card stat">
+            <div class="stat-label">Reading Minutes</div>
+            <div class="stat-value" id="totalMinutes">0</div>
+          </div>
+
+          <div class="card stat">
+            <div class="stat-label">Completion Rate</div>
+            <div class="stat-value" id="completionRate">0%</div>
+          </div>
+
+          <div class="card stat">
+            <div class="stat-label">Favorites</div>
+            <div class="stat-value" id="favoriteCount">0</div>
+          </div>
+
+        </div>
+
+
+        <div class="grid two">
+
+          <div class="card section-card">
+
+            <div class="section-title">
+              <h3>Books Completed by Month</h3>
+            </div>
+
+            <div id="monthlyChart" class="chart"></div>
+
+          </div>
+
+
+          <div class="card section-card">
+
+            <div class="section-title">
+              <h3>Genres</h3>
+            </div>
+
+            <div id="genreStats"></div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- CALENDAR -->
+      <section class="page" id="page-calendar">
+
+        <div class="card section-card">
+
+          <div class="section-title">
+
+            <button
+              class="btn btn-secondary btn-small"
+              id="prevMonth"
+            >
+              ←
+            </button>
+
+            <h3 id="calendarTitle"></h3>
+
+            <button
+              class="btn btn-secondary btn-small"
+              id="nextMonth"
+            >
+              →
+            </button>
+
+          </div>
+
+          <div
+            id="calendarGrid"
+            class="calendar"
+          ></div>
+
+        </div>
+
+      </section>
+
+
+      <!-- NOTES -->
+      <section class="page" id="page-notes">
+
+        <div class="card section-card">
+
+          <div class="section-title">
+            <h3>📝 Notes & Reviews</h3>
+          </div>
+
+          <div id="notesList"></div>
+
+        </div>
+
+        <div
+          class="card section-card"
+          style="margin-top:17px"
+        >
+
+          <div class="section-title">
+            <h3>✨ Highlights</h3>
+
+            <button
+              class="btn btn-primary btn-small"
+              id="addHighlightButton"
+            >
+              ＋ Highlight
+            </button>
+          </div>
+
+          <div id="highlightList"></div>
+
+        </div>
+
+      </section>
+
+
+      <!-- PROFILE -->
+      <section class="page" id="page-profile">
+
+        <div class="card section-card">
+
+          <div class="section-title">
+            <h3>👤 Your Profile</h3>
+          </div>
+
+          <form id="profileForm">
+
+            <div class="form-grid">
+
+              <label class="form-label">
+                Display name
+                <input id="profileName">
+              </label>
+
+              <label class="form-label">
+                Email
+                <input
+                  id="profileEmail"
+                  readonly
+                >
+              </label>
+
+              <label class="form-label">
+                Theme
+                <select id="profileTheme">
+                  <option value="light">
+                    Light Garden
+                  </option>
+                  <option value="dark">
+                    Night Garden
+                  </option>
+                </select>
+              </label>
+
+            </div>
+
+            <div class="modal-foot">
+
+              <button
+                type="submit"
+                class="btn btn-primary"
+              >
+                Save Profile
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-danger"
+                id="profileLogout"
+              >
+                Sign Out
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+</div>
+
+
+<!-- MOBILE NAV -->
+
+<nav id="bottomNav" class="bottom-nav hidden">
+
+  <button data-page="dashboard">🏡<br>Home</button>
+  <button data-page="library">📚<br>Library</button>
+  <button data-page="sessions">⏱️<br>Read</button>
+  <button data-page="goals">🎯<br>Goals</button>
+  <button data-page="profile">👤<br>Profile</button>
+
+</nav>
+
+
+<!-- BOOK MODAL -->
+
+<div class="modal" id="bookModal">
+
+  <div class="modal-box">
+
+    <div class="modal-head">
+
+      <h2 id="bookModalTitle">
+        Add Book
+      </h2>
+
+      <button
+        class="close"
+        data-close="bookModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form id="bookForm">
+
+      <input
+        type="hidden"
+        id="bookId"
+      >
+
+      <div class="form-grid">
+
+        <label class="form-label">
+          Title *
+          <input
+            id="bookTitle"
+            required
+          >
+        </label>
+
+        <label class="form-label">
+          Author
+          <input id="bookAuthor">
+        </label>
+
+        <label class="form-label">
+          ISBN
+          <input id="bookISBN">
+        </label>
+
+        <label class="form-label">
+          Publisher
+          <input id="bookPublisher">
+        </label>
+
+        <label class="form-label">
+          Page count
+          <input
+            type="number"
+            id="bookPages"
+            min="0"
+            value="0"
+          >
+        </label>
+
+        <label class="form-label">
+          Current page
+          <input
+            type="number"
+            id="bookCurrentPage"
+            min="0"
+            value="0"
+          >
+        </label>
+
+        <label class="form-label">
+          Status
+          <select id="bookStatus">
+            <option value="want">
+              Want to Read
+            </option>
+            <option value="reading">
+              Currently Reading
+            </option>
+            <option value="completed">
+              Completed
+            </option>
+            <option value="hold">
+              On Hold
+            </option>
+            <option value="dnf">
+              Did Not Finish
+            </option>
+          </select>
+        </label>
+
+        <label class="form-label">
+          Rating
+          <select id="bookRating">
+            <option value="0">Not rated</option>
+            <option value="1">⭐ 1</option>
+            <option value="2">⭐⭐ 2</option>
+            <option value="3">⭐⭐⭐ 3</option>
+            <option value="4">⭐⭐⭐⭐ 4</option>
+            <option value="5">⭐⭐⭐⭐⭐ 5</option>
+          </select>
+        </label>
+
+        <label class="form-label">
+          Genre
+          <input
+            id="bookGenre"
+            placeholder="Fiction, History..."
+          >
+        </label>
+
+        <label class="form-label">
+          Tags
+          <input
+            id="bookTags"
+            placeholder="favorite, study, 2026"
+          >
+        </label>
+
+        <label class="form-label">
+          Start date
+          <input
+            type="date"
+            id="bookStart"
+          >
+        </label>
+
+        <label class="form-label">
+          Finish date
+          <input
+            type="date"
+            id="bookFinish"
+          >
+        </label>
+
+        <label class="form-label full">
+          Cover image URL
+          <input
+            id="bookCover"
+            placeholder="https://..."
+          >
+        </label>
+
+        <label class="form-label full">
+          Description
+          <textarea id="bookDescription"></textarea>
+        </label>
+
+        <label class="form-label full">
+          Review
+          <textarea id="bookReview"></textarea>
+        </label>
+
+        <label class="form-label full">
+          Notes
+          <textarea id="bookNotes"></textarea>
+        </label>
+
+        <label style="display:flex;align-items:center;gap:8px">
+          <input
+            type="checkbox"
+            id="bookFavorite"
+            style="width:auto"
+          >
+          Favorite
+        </label>
+
+      </div>
+
+      <div class="modal-foot">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-close="bookModal"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+        >
+          Save Book
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<!-- BOOK DETAIL MODAL -->
+
+<div class="modal" id="detailModal">
+
+  <div class="modal-box">
+
+    <div class="modal-head">
+
+      <h2>Book Details</h2>
+
+      <button
+        class="close"
+        data-close="detailModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div id="detailContent"></div>
+
+  </div>
+
+</div>
+
+
+<!-- HIGHLIGHT MODAL -->
+
+<div class="modal" id="highlightModal">
+
+  <div class="modal-box">
+
+    <div class="modal-head">
+
+      <h2>Add Highlight</h2>
+
+      <button
+        class="close"
+        data-close="highlightModal"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <form id="highlightForm">
+
+      <div class="form-grid">
+
+        <label class="form-label">
+          Book
+          <select id="highlightBook" required></select>
+        </label>
+
+        <label class="form-label">
+          Page
+          <input
+            type="number"
+            id="highlightPage"
+            min="0"
+            value="0"
+          >
+        </label>
+
+        <label class="form-label full">
+          Highlight
+          <textarea
+            id="highlightText"
+            required
+            placeholder="Write the passage you want to remember..."
+          ></textarea>
+        </label>
+
+        <label class="form-label full">
+          Your note
+          <textarea
+            id="highlightNote"
+            placeholder="Why is this important?"
+          ></textarea>
+        </label>
+
+        <label class="form-label">
+          Color
+          <select id="highlightColor">
+            <option value="yellow">🌼 Yellow</option>
+            <option value="green">🌿 Green</option>
+            <option value="blue">🩵 Blue</option>
+            <option value="pink">🌸 Pink</option>
+            <option value="purple">🪻 Purple</option>
+          </select>
+        </label>
+
+      </div>
+
+      <div class="modal-foot">
+
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-close="highlightModal"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+        >
+          Save Highlight
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<div id="toast" class="toast"></div>
+
+
+<!-- ============================================================
+     SUPABASE
+============================================================ -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+<script>
+"use strict";
+
+/*
+ * ============================================================
+ * READING GARDEN CLOUD EDITION
+ * ============================================================
+ *
+ * Supabase configuration.
+ *
+ * The URL and browser-safe anon/publishable key belong here.
+ *
+ * NEVER put a Supabase service_role / secret key here.
+ */
+
+const SUPABASE_URL =
+  "https://gcfetfjkoiubvlxiiocy.supabase.co";
+
+/*
+ * Your public anon key is intentionally represented as a
+ * configuration placeholder in this generated source.
+ *
+ * Replace the value below with the anon/public key you already
+ * supplied to me before uploading the project.
+ */
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjZmV0Zmprb2l1YnZseGlpb2N5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMzQ5ODMsImV4cCI6MjEwMDgxMDk4M30.1p2l9IPieNeQGGMrXcDSGWyDS90aZn72YMrljwpjgYE";
+
+const {
+  createClient
+} = window.supabase;
+
+const supabaseClient = createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
+  {
+    auth:{
+      autoRefreshToken:true,
+      persistSession:true,
+      detectSessionInUrl:true
+    }
+  }
+);
+
+
+/* ============================================================
+   APPLICATION STATE
+============================================================ */
+
+const state = {
+  user:null,
+  profile:null,
+
+  books:[],
+  sessions:[],
+  goals:null,
+  highlights:[],
+
+  calendarDate:new Date(),
+
+  authMode:"login",
+
+  timer:{
+    running:false,
+    startedAt:null,
+    elapsed:0,
+    interval:null,
+    bookId:null
+  }
+};
+
+
+const STATUS_LABELS = {
+  want:"Want to Read",
+  reading:"Currently Reading",
+  completed:"Completed",
+  hold:"On Hold",
+  dnf:"Did Not Finish"
+};
+
+
+const COLOR_MAP = {
+  yellow:"var(--yellow)",
+  green:"var(--green)",
+  blue:"var(--blue)",
+  pink:"var(--rose)",
+  purple:"var(--lavender)"
+};
+
+
+/* ============================================================
+   HELPERS
+============================================================ */
+
+function $(id){
+  return document.getElementById(id);
+}
+
+
+function escapeHTML(value=""){
+  return String(value)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+
+function uid(){
+  return crypto.randomUUID();
+}
+
+
+function today(){
+  return new Date().toISOString().slice(0,10);
+}
+
+
+function formatNumber(value){
+  return Number(value || 0).toLocaleString();
+}
+
+
+function showToast(message){
+  const toast = $("toast");
+
+  toast.textContent = message;
+  toast.classList.add("show");
+
+  clearTimeout(showToast.timer);
+
+  showToast.timer = setTimeout(()=>{
+    toast.classList.remove("show");
+  },2800);
+}
+
+
+function showError(error){
+  console.error(error);
+
+  const message =
+    error?.message ||
+    "Something went wrong.";
+
+  showToast(message);
+}
+
+
+function openModal(id){
+  $(id).classList.add("open");
+}
+
+
+function closeModal(id){
+  $(id).classList.remove("open");
+}
+
+
+function getProgress(book){
+
+  if(book.status === "completed"){
+    return 100;
+  }
+
+  const total = Number(book.page_count || 0);
+
+  if(!total){
+    return 0;
+  }
+
+  return Math.min(
+    100,
+    Math.max(
+      0,
+      Number(book.current_page || 0) / total * 100
+    )
+  );
+}
+
+
+function initial(name="Reader"){
+  return (
+    name
+      .trim()
+      .charAt(0)
+      .toUpperCase()
+    || "R"
+  );
+}
+
+
+/* ============================================================
+   THEME
+============================================================ */
+
+function applyTheme(theme){
+
+  document.documentElement.dataset.theme =
+    theme === "dark" ? "dark" : "light";
+
+  $("themeButton").textContent =
+    theme === "dark" ? "🌙" : "☀️";
+
+  $("profileTheme").value =
+    theme === "dark" ? "dark" : "light";
+
+  localStorage.setItem(
+    "reading-garden-theme",
+    theme
+  );
+}
+
+
+function currentTheme(){
+
+  return localStorage.getItem(
+    "reading-garden-theme"
+  ) || "light";
+}
+
+
+/* ============================================================
+   AUTH UI
+============================================================ */
+
+function setAuthMode(mode){
+
+  state.authMode = mode;
+
+  const signup = mode === "signup";
+
+  $("authTitle").textContent =
+    signup
+      ? "Plant your garden"
+      : "Welcome back";
+
+  $("authSubtitle").textContent =
+    signup
+      ? "Create your private reading garden."
+      : "Sign in to continue growing your garden.";
+
+  $("nameField").style.display =
+    signup ? "grid" : "none";
+
+  $("authSubmit").textContent =
+    signup ? "Create Account" : "Sign In";
+
+  $("authModeToggle").textContent =
+    signup
+      ? "Already have an account?"
+      : "Create an account";
+
+  $("forgotButton").style.display =
+    signup ? "none" : "block";
+
+  $("authPassword").autocomplete =
+    signup ? "new-password" : "current-password";
+
+  clearAuthMessage();
+}
+
+
+function authMessage(message,type="error"){
+
+  const box = $("authMessage");
+
+  box.textContent = message;
+  box.className =
+    `auth-message show ${type}`;
+}
+
+
+function clearAuthMessage(){
+
+  $("authMessage").textContent = "";
+  $("authMessage").className =
+    "auth-message";
+}
+
+
+async function handleAuth(event){
+
+  event.preventDefault();
+
+  clearAuthMessage();
+
+  const email =
+    $("authEmail").value.trim();
+
+  const password =
+    $("authPassword").value;
+
+  const displayName =
+    $("authName").value.trim();
+
+  const button =
+    $("authSubmit");
+
+  button.disabled = true;
+
+  try{
+
+    if(state.authMode === "signup"){
+
+      if(password.length < 6){
+        throw new Error(
+          "Password must be at least 6 characters."
+        );
+      }
+
+      const {
+        data,
+        error
+      } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options:{
+          data:{
+            display_name:displayName
+          }
+        }
+      });
+
+      if(error) throw error;
+
+      if(data.session){
+
+        authMessage(
+          "Account created. Welcome to Reading Garden!",
+          "success"
+        );
+
+      }else{
+
+        authMessage(
+          "Account created. Check your email to confirm your account.",
+          "success"
+        );
+
+      }
+
+    }else{
+
+      const {
+        error
+      } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if(error) throw error;
+
+    }
+
+  }catch(error){
+
+    authMessage(
+      error.message ||
+      "Authentication failed."
+    );
+
+  }finally{
+
+    button.disabled = false;
+
+  }
+}
+
+
+async function resetPassword(){
+
+  const email =
+    $("authEmail").value.trim();
+
+  if(!email){
+
+    authMessage(
+      "Enter your email address first."
+    );
+
+    $("authEmail").focus();
+
+    return;
+  }
+
+  try{
+
+    const {
+      error
+    } = await supabaseClient.auth.resetPasswordForEmail(
+      email,
+      {
+        redirectTo:
+          window.location.origin +
+          window.location.pathname
+      }
+    );
+
+    if(error) throw error;
+
+    authMessage(
+      "Password reset instructions have been sent to your email.",
+      "success"
+    );
+
+  }catch(error){
+
+    authMessage(
+      error.message ||
+      "Unable to send reset email."
+    );
+
+  }
+}
+
+
+async function logout(){
+
+  try{
+
+    stopTimer();
+
+    const {
+      error
+    } = await supabaseClient.auth.signOut();
+
+    if(error) throw error;
+
+  }catch(error){
+
+    showError(error);
+
+  }
+}
+
+
+/* ============================================================
+   APPLICATION BOOT
+============================================================ */
+
+async function boot(){
+
+  applyTheme(currentTheme());
+
+  try{
+
+    const {
+      data,
+      error
+    } = await supabaseClient.auth.getSession();
+
+    if(error) throw error;
+
+    if(data.session){
+
+      state.user =
+        data.session.user;
+
+      await enterApplication();
+
+    }else{
+
+      showAuth();
+
+    }
+
+  }catch(error){
+
+    console.error(error);
+
+    showAuth();
+
+    showToast(
+      "Unable to connect to Reading Garden."
+    );
+
+  }finally{
+
+    $("loading").classList.add("hidden");
+
+  }
+}
+
+
+function showAuth(){
+
+  $("authScreen").classList.remove("hidden");
+  $("appShell").classList.add("hidden");
+  $("bottomNav").classList.add("hidden");
+}
+
+
+async function enterApplication(){
+
+  $("authScreen").classList.add("hidden");
+  $("appShell").classList.remove("hidden");
+  $("bottomNav").classList.remove("hidden");
+
+  await loadCloudData();
+
+  renderAll();
+}
+
+
+supabaseClient.auth.onAuthStateChange(
+  async (event,session)=>{
+
+    if(event === "SIGNED_IN" && session){
+
+      state.user =
+        session.user;
+
+      if($("appShell").classList.contains("hidden")){
+
+        await enterApplication();
+
+      }
+
+    }
+
+    if(event === "SIGNED_OUT"){
+
+      state.user = null;
+      state.profile = null;
+      state.books = [];
+      state.sessions = [];
+      state.goals = null;
+      state.highlights = [];
+
+      showAuth();
+    }
+
+  }
+);
+
+
+/* ============================================================
+   CLOUD DATA
+============================================================ */
+
+async function loadCloudData(){
+
+  if(!state.user){
+    return;
+  }
+
+  try{
+
+    const [
+      profileResult,
+      booksResult,
+      sessionsResult,
+      goalsResult,
+      highlightsResult
+    ] = await Promise.all([
+
+      supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id",state.user.id)
+        .maybeSingle(),
+
+      supabaseClient
+        .from("books")
+        .select("*")
+        .eq("user_id",state.user.id)
+        .order("updated_at",{ascending:false}),
+
+      supabaseClient
+        .from("reading_sessions")
+        .select("*")
+        .eq("user_id",state.user.id)
+        .order("reading_date",{ascending:false}),
+
+      supabaseClient
+        .from("goals")
+        .select("*")
+        .eq("user_id",state.user.id)
+        .eq("year",new Date().getFullYear())
+        .maybeSingle(),
+
+      supabaseClient
+        .from("highlights")
+        .select("*")
+        .eq("user_id",state.user.id)
+        .order("created_at",{ascending:false})
+
+    ]);
+
+    if(profileResult.error){
+      throw profileResult.error;
+    }
+
+    if(booksResult.error){
+      throw booksResult.error;
+    }
+
+    if(sessionsResult.error){
+      throw sessionsResult.error;
+    }
+
+    if(goalsResult.error){
+      throw goalsResult.error;
+    }
+
+    if(highlightsResult.error){
+      throw highlightsResult.error;
+    }
+
+    state.profile =
+      profileResult.data;
+
+    state.books =
+      booksResult.data || [];
+
+    state.sessions =
+      sessionsResult.data || [];
+
+    state.goals =
+      goalsResult.data;
+
+    state.highlights =
+      highlightsResult.data || [];
+
+    if(!state.goals){
+
+      state.goals =
+        await createDefaultGoal();
+
+    }
+
+    updateUserUI();
+
+  }catch(error){
+
+    showError(error);
+
+  }
+}
+
+
+async function createDefaultGoal(){
+
+  const goal = {
+    user_id:state.user.id,
+    year:new Date().getFullYear(),
+    books_target:24,
+    pages_target:5000,
+    minutes_target:10000
+  };
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("goals")
+    .insert(goal)
+    .select()
+    .single();
+
+  if(error) throw error;
+
+  return data;
+}
+
+
+/* ============================================================
+   PROFILE
+============================================================ */
+
+function updateUserUI(){
+
+  const name =
+    state.profile?.display_name ||
+    state.user?.user_metadata?.display_name ||
+    state.user?.email?.split("@")[0] ||
+    "Reader";
+
+  $("sideName").textContent =
+    name;
+
+  $("sideEmail").textContent =
+    state.user?.email || "";
+
+  $("sideAvatar").textContent =
+    initial(name);
+
+  $("welcomeText").textContent =
+    `Welcome back, ${name} 🌿`;
+
+  $("profileName").value =
+    state.profile?.display_name || name;
+
+  $("profileEmail").value =
+    state.user?.email || "";
+
+  $("profileTheme").value =
+    currentTheme();
+
+}
+
+
+async function saveProfile(event){
+
+  event.preventDefault();
+
+  const name =
+    $("profileName").value.trim();
+
+  try{
+
+    const {
+      data,
+      error
+    } = await supabaseClient
+      .from("profiles")
+      .upsert({
+        id:state.user.id,
+        display_name:name
+      })
+      .select()
+      .single();
+
+    if(error) throw error;
+
+    state.profile = data;
+
+    applyTheme(
+      $("profileTheme").value
+    );
+
+    updateUserUI();
+
+    showToast(
+      "Profile saved."
+    );
+
+  }catch(error){
+
+    showError(error);
+
+  }
+}
+
+
+/* ============================================================
+   BOOKS
+============================================================ */
+
+function bookCard(book){
+
+  const progress =
+    getProgress(book);
+
+  const cover =
+    book.cover_url
+      ? `
+        <img
+          src="${escapeHTML(book.cover_url)}"
+          alt=""
+          loading="lazy"
+        >
+      `
+      : `
+        <div class="cover-placeholder">
+          ${escapeHTML(book.title)}
+        </div>
+      `;
+
+  return `
+    <article class="book">
+
+      <div class="cover">
+        ${cover}
+      </div>
+
+      <div class="book-body">
+
+        <div style="display:flex;justify-content:space-between;gap:5px">
+
+          <span class="badge">
+            ${STATUS_LABELS[book.status] || "Book"}
+          </span>
+
+          ${
+            book.favorite
+              ? "<span>❤️</span>"
+              : ""
+          }
+
+        </div>
+
+        <div class="book-title">
+          ${escapeHTML(book.title)}
+        </div>
+
+        <div class="book-author">
+          ${escapeHTML(
+            book.author || "Unknown author"
+          )}
+        </div>
+
+        <div class="progress">
+          <span
+            style="width:${progress}%"
+          ></span>
+        </div>
+
+        <div class="book-meta">
+
+          <span>
+            ${formatNumber(book.current_page)}
+            /
+            ${formatNumber(book.page_count)}
+          </span>
+
+          <span>
+            ${Math.round(progress)}%
+          </span>
+
+        </div>
+
+        <div class="book-actions">
+
+          <button
+            class="btn btn-secondary btn-small"
+            onclick="viewBook('${book.id}')"
+          >
+            View
+          </button>
+
+          <button
+            class="btn btn-secondary btn-small"
+            onclick="editBook('${book.id}')"
+          >
+            Edit
+          </button>
+
+          <button
+            class="btn btn-danger btn-small"
+            onclick="deleteBook('${book.id}')"
+          >
+            Delete
+          </button>
+
+        </div>
+
+      </div>
+
+    </article>
+  `;
+}
+
+
+function renderLibrary(){
+
+  const search =
+    $("bookSearch").value
+      .trim()
+      .toLowerCase();
+
+  const status =
+    $("bookStatusFilter").value;
+
+  const sort =
+    $("bookSort").value;
+
+  let books =
+    state.books.filter(book=>{
+
+      const text = [
+
+        book.title,
+        book.author,
+        book.genre,
+        ...(book.tags || [])
+
+      ]
+      .join(" ")
+      .toLowerCase();
+
+      return (
+        (!search || text.includes(search)) &&
+        (status === "all" ||
+         book.status === status)
+      );
+
+    });
+
+
+  books.sort((a,b)=>{
+
+    if(sort === "title"){
+      return a.title.localeCompare(b.title);
+    }
+
+    if(sort === "author"){
+      return (a.author || "")
+        .localeCompare(b.author || "");
+    }
+
+    if(sort === "rating"){
+      return Number(b.rating || 0) -
+             Number(a.rating || 0);
+    }
+
+    if(sort === "progress"){
+      return getProgress(b) -
+             getProgress(a);
+    }
+
+    return new Date(b.updated_at) -
+           new Date(a.updated_at);
+
+  });
+
+
+  $("libraryCount").textContent =
+    `${books.length} book${books.length === 1 ? "" : "s"}`;
+
+  $("libraryBooks").innerHTML =
+    books.length
+      ? books.map(bookCard).join("")
+      : `
+        <div class="empty">
+          🌱 Your garden is waiting for its first book.
+        </div>
+      `;
+}
+
+
+function resetBookForm(){
+
+  $("bookForm").reset();
+
+  $("bookId").value = "";
+
+  $("bookPages").value = 0;
+  $("bookCurrentPage").value = 0;
+
+  $("bookStatus").value =
+    "want";
+
+  $("bookRating").value =
+    "0";
+
+}
+
+
+function openBookForm(book=null){
+
+  resetBookForm();
+
+  if(book){
+
+    $("bookModalTitle").textContent =
+      "Edit Book";
+
+    $("bookId").value =
+      book.id;
+
+    $("bookTitle").value =
+      book.title || "";
+
+    $("bookAuthor").value =
+      book.author || "";
+
+    $("bookISBN").value =
+      book.isbn || "";
+
+    $("bookPublisher").value =
+      book.publisher || "";
+
+    $("bookDescription").value =
+      book.description || "";
+
+    $("bookPages").value =
+      book.page_count || 0;
+
+    $("bookCurrentPage").value =
+      book.current_page || 0;
+
+    $("bookStatus").value =
+      book.status || "want";
+
+    $("bookRating").value =
+      book.rating || 0;
+
+    $("bookGenre").value =
+      book.genre || "";
+
+    $("bookTags").value =
+      (book.tags || []).join(", ");
+
+    $("bookStart").value =
+      book.start_date || "";
+
+    $("bookFinish").value =
+      book.finish_date || "";
+
+    $("bookCover").value =
+      book.cover_url || "";
+
+    $("bookReview").value =
+      book.review || "";
+
+    $("bookNotes").value =
+      book.notes || "";
+
+    $("bookFavorite").checked =
+      !!book.favorite;
+
+  }else{
+
+    $("bookModalTitle").textContent =
+      "Add Book";
+
+  }
+
+  openModal("bookModal");
+}
+
+
+async function saveBook(event){
+
+  event.preventDefault();
+
+  if(!state.user){
+    return;
+  }
+
+  const id =
+    $("bookId").value;
+
+  let pageCount =
+    Math.max(
+      0,
+      Number($("bookPages").value || 0)
+    );
+
+  let currentPage =
+    Math.max(
+      0,
+      Number($("bookCurrentPage").value || 0)
+    );
+
+  if(pageCount &&
+     currentPage > pageCount){
+
+    currentPage =
+      pageCount;
+  }
+
+  let status =
+    $("bookStatus").value;
+
+  if(status === "completed"){
+    currentPage =
+      pageCount;
+  }
+
+
+  const existing =
+    state.books.find(
+      book => book.id === id
+    );
+
+
+  const payload = {
+
+    title:
+      $("bookTitle").value.trim(),
+
+    author:
+      $("bookAuthor").value.trim(),
+
+    isbn:
+      $("bookISBN").value.trim(),
+
+    publisher:
+      $("bookPublisher").value.trim(),
+
+    description:
+      $("bookDescription").value.trim(),
+
+    page_count:
+      pageCount,
+
+    current_page:
+      currentPage,
+
+    status,
+
+    rating:
+      Number($("bookRating").value || 0),
+
+    genre:
+      $("bookGenre").value.trim(),
+
+    tags:
+      $("bookTags").value
+        .split(",")
+        .map(x=>x.trim())
+        .filter(Boolean),
+
+    cover_url:
+      $("bookCover").value.trim(),
+
+    start_date:
+      $("bookStart").value || null,
+
+    finish_date:
+      $("bookFinish").value || null,
+
+    favorite:
+      $("bookFavorite").checked,
+
+    review:
+      $("bookReview").value.trim(),
+
+    notes:
+      $("bookNotes").value.trim(),
+
+    user_id:
+      state.user.id
+  };
+
+
+  if(status === "reading" &&
+     !payload.start_date){
+
+    payload.start_date =
+      today();
+  }
+
+
+  if(status === "completed" &&
+     !payload.finish_date){
+
+    payload.finish_date =
+      today();
+  }
+
+
+  try{
+
+    let data;
+    let error;
+
+    if(id){
+
+      ({
+        data,
+        error
+      } = await supabaseClient
+        .from("books")
+        .update(payload)
+        .eq("id",id)
+        .eq("user_id",state.user.id)
+        .select()
+        .single());
+
+    }else{
+
+      ({
+        data,
+        error
+      } = await supabaseClient
+        .from("books")
+        .insert(payload)
+        .select()
+        .single());
+
+    }
+
+    if(error) throw error;
+
+    if(id){
+
+      const index =
+        state.books.findIndex(
+          b=>b.id===id
+        );
+
+      if(index >= 0){
+        state.books[index]=data;
+      }
+
+    }else{
+
+      state.books.unshift(data);
+
+    }
+
+    closeModal("bookModal");
+
+    renderAll();
+
+    showToast(
+      id
+        ? "Book updated."
+        : "Book planted in your garden. 🌱"
+    );
+
+  }catch(error){
+
+    showError(error);
+
+  }
+}
+
+
+async function deleteBook(id){
+
+  const book =
+    state.books.find(
+      b=>b.id===id
+    );
+
+  if(!book) return;
+
+  if(!confirm(
+    `Remove "${book.title}" from your garden?`
+  )){
+    return;
+  }
+
+  try{
+
+    const {
+      error
+    } = await supabaseClient
+      .from("books")
+      .delete()
+      .eq("id",id)
+      .eq("user_id",state.user.id);
+
+    if(error) throw error;
+
+    state.books =
+      state.books.filter(
+        b=>b.id!==id
+      );
+
+    state.sessions =
+      state.sessions.filter(
+        s=>s.book_id!==id
+      );
+
+    state.highlights =
+      state.highlights.filter(
+        h=>h.book_id!==id
+      );
+
+    renderAll();
+
+    showToast(
+      "Book removed."
+    );
+
+  }catch(error){
+
+    showError(error);
+
+  }
+}
+
+
+function editBook(id){
+
+  const book =
+    state.books.find(
+      b=>b.id===id
+    );
+
+  if(book){
+    openBookForm(book);
+  }
+}
+
+
+function viewBook(id){
+
+  const book =
+    state.books.find(
+      b=>b.id===id
+    );
+
+  if(!book) return;
+
+  const progress =
+    getProgress(book);
+
+  const sessions =
+    state.sessions
+      .filter(
+        s=>s.book_id===id
+      )
+      .sort(
+        (a,b)=>
+          new Date(b.reading_date) -
+          new Date(a.reading_date)
+      );
+
+
+  $("detailContent").innerHTML = `
+
+    <div
+      style="
+        display:grid;
+        grid-template-columns:180px 1fr;
+        gap:22px
+      "
+    >
+
+      <div>
+
+        <div
+          class="cover"
+          style="
+            height:250px;
+            border-radius:15px
+          "
+        >
+
+          ${
+            book.cover_url
+              ? `
+                <img
+                  src="${escapeHTML(book.cover_url)}"
+                  alt=""
+                >
+              `
+              : `
+                <div class="cover-placeholder">
+                  ${escapeHTML(book.title)}
+                </div>
+              `
+          }
+
+        </div>
+
+      </div>
+
+
+      <div>
+
+        <span class="badge">
+          ${STATUS_LABELS[book.status]}
+        </span>
+
+        <h2 style="margin:10px 0 4px">
+          ${escapeHTML(book.title)}
+        </h2>
+
+        <div class="muted">
+          ${escapeHTML(
+            book.author ||
+            "Unknown author"
+          )}
+        </div>
+
+
+        <div style="margin:20px 0">
+
+          <div
+            style="
+              display:flex;
+              justify-content:space-between
+            "
+          >
+            <strong>Reading Progress</strong>
+            <strong>
+              ${Math.round(progress)}%
+            </strong>
+          </div>
+
+          <div class="progress">
+            <span
+              style="width:${progress}%"
+            ></span>
+          </div>
+
+          <div class="muted">
+            ${formatNumber(book.current_page)}
+            /
+            ${formatNumber(book.page_count)}
+            pages
+          </div>
+
+        </div>
+
+
+        <div
+          style="
+            display:grid;
+            gap:8px;
+            font-size:13px
+          "
+        >
+
+          <div>
+            <strong>Genre:</strong>
+            ${escapeHTML(book.genre || "—")}
+          </div>
+
+          <div>
+            <strong>Rating:</strong>
+            ${
+              book.rating
+                ? "⭐".repeat(
+                    Math.round(book.rating)
+                  )
+                : "Not rated"
+            }
+          </div>
+
+          <div>
+            <strong>Started:</strong>
+            ${escapeHTML(
+              book.start_date || "—"
+            )}
+          </div>
+
+          <div>
+            <strong>Finished:</strong>
+            ${escapeHTML(
+              book.finish_date || "—"
+            )}
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    ${
+      book.description
+        ? `
+          <div style="margin-top:24px">
+            <h3>Description</h3>
+            <p class="muted">
+              ${escapeHTML(book.description)}
+            </p>
+          </div>
+        `
+        : ""
+    }
+
+
+    ${
+      book.review
+        ? `
+          <div style="margin-top:24px">
+            <h3>Review</h3>
+            <p class="muted">
+              ${escapeHTML(book.review)}
+            </p>
+          </div>
+        `
+        : ""
+    }
+
+
+    ${
+      book.notes
+        ? `
+          <div style="margin-top:24px">
+            <h3>Notes</h3>
+            <p class="muted">
+              ${escapeHTML(book.notes)}
+            </p>
+          </div>
+        `
+        : ""
+    }
+
+
+    <div style="margin-top:24px">
+
+      <h3>Reading Sessions</h3>
+
+      ${
+        sessions.length
+          ? `
+            <div class="session-list">
+              ${sessions.map(
+                sessionHTML
+              ).join("")}
+            </div>
+          `
+          : `
+            <div class="empty">
+              No reading sessions yet.
+            </div>
+          `
+      }
+
+    </div>
+
+
+    <div class="modal-foot">
+
+      <button
+        class="btn btn-secondary"
+        onclick="
+          closeModal('detailModal');
+          editBook('${book.id}')
+        "
+      >
+        Edit Book
+      </button>
+
+    </div>
+
+  `;
+
+  openModal("detailModal");
+}
+
+
+/* ============================================================
+   SESSIONS
+============================================================ */
+
+function sessionHTML(session){
+
+  const book =
+    state.books.find(
+      b=>b.id===session.book_id
+    );
+
+  return `
+    <div class="session">
+
+      <div>
+
+        <strong>
+          ${escapeHTML(
+            book?.title ||
+            "Unknown book"
+          )}
+        </strong>
+
+        <div class="muted">
+          ${escapeHTML(
+            session.reading_date
+          )}
+
+          ${
+            session.notes
+              ? " · " +
+                escapeHTML(
+                  session.notes
+                )
+              : ""
+          }
+        </div>
+
+      </div>
+
+      <div style="text-align:right">
+
+        <strong>
+          ${formatNumber(session.pages)}
+          pages
+        </strong>
+
+        <div class="muted">
+          ${formatNumber(session.minutes)}
+          min
+        </div>
+
+      </div>
+
+    </div>
+  `;
+}
+
+
+function populateBookSelects(){
+
+  const options = `
+    <option value="">
+      Select a book...
+    </option>
+
+    ${state.books.map(
+      book=>`
+        <option value="${book.id}">
+          ${escapeHTML(book.title)}
+        </option>
+      `
+    ).join("")}
+  `;
+
+  $("sessionBook").innerHTML =
+    options;
+
+  $("highlightBook").innerHTML =
+    options;
+}
+
+
+async function saveSession(event){
+
+  event.preventDefault();
+
+  const bookId =
+    $("sessionBook").value;
+
+  if(!bookId){
+
+    showToast(
+      "Choose a book first."
+    );
+
+    return;
+  }
+
+
+  const pages =
+    Math.max(
+      0,
+      Number(
+        $("sessionPages").value || 0
+      )
+    );
+
+  const minutes =
+    Math.max(
+      0,
+      Number(
+        $("sessionMinutes").value || 0
+      )
+    );
+
+  const date =
+    $("sessionDate").value ||
+    today();
+
+
+  try{
+
+    const {
+      data,
+      error
+    } = await supabaseClient
+      .from("reading_sessions")
+      .insert({
+        user_id:state.user.id,
+        book_id:bookId,
+        reading_date:date,
+        pages,
+        minutes,
+        notes:
+          $("sessionNotes")
+            .value
+            .trim()
+      })
+      .select()
+      .single();
+
+    if(error) throw error;
+
+    state.sessions.unshift(data);
+
+    const book =
+      state.books.find(
+        b=>b.id===bookId
+      );
+
+    if(book){
+
+      const newPage =
+        Math.min(
+          Number(book.page_count || Infinity),
+          Number(book.current_page || 0) +
+          pages
+        );
+
+      let newStatus =
+        book.status;
+
+      let finishDate =
+        book.finish_date;
+
+      if(
+        book.page_count > 0 &&
+        newPage >= book.page_count
+      ){
+
+        newStatus =
+          "completed";
+
+        finishDate =
+          finishDate ||
+          date;
+      }
+
+      const {
+        data:updatedBook,
+        error:updateError
+      } = await supabaseClient
+        .from("books")
+        .update({
+          current_page:newPage,
+          status:newStatus,
+          finish_date:finishDate
+        })
+        .eq("id",book.id)
+        .eq("user_id",state.user.id)
+        .select()
+        .single();
+
+      if(updateError){
+        throw updateError;
+      }
+
+      Object.assign(
+        book,
+        updatedBook
+      );
+
+    }
+
+
+    $("sessionForm").reset();
+
+    $("sessionDate").value =
+      today();
+
+    renderAll();
+
+    showToast(
+      "Reading session saved. 🌱"
+    );
+
+  }catch(error){
+
+    showError(error);
+
+  }
+}
+
+
+function calculateStreak(){
+
+  const dates = [
+    ...new Set(
+      state.sessions
+        .map(s=>s.reading_date)
+        .filter(Boolean)
+    )
+  ].sort().reverse();
+
+  if(!dates.length){
+    return 0;
+  }
+
+  let cursor =
+    new Date(today());
+
+  let first =
+    dates[0];
+
+  let todayDate =
+    cursor.toISOString().slice(0,10);
+
+  if(first !== todayDate){
+
+    cursor.setDate(
+      cursor.getDate()-1
+    );
+
+    if(
+      first !==
+      cursor.toISOString().slice(0,10)
+    ){
+      return 0;
+    }
+
+  }
+
+  let streak = 0;
+
+  for(const date of dates){
+
+    const expected =
+      cursor
+        .toISOString()
+        .slice(0,10);
+
+    if(date !== expected){
+      break;
+    }
+
+    streak++;
+
+    cursor.setDate(
+      cursor.getDate()-1
+    );
+  }
+
+  return streak;
+}
+
+
+/* ============================================================
+   TIMER
+============================================================ */
+
+function timerDisplay(seconds){
+
+  const hours =
+    Math.floor(seconds / 3600);
+
+  const minutes =
+    Math.floor(
+      (seconds % 3600) / 60
+    );
+
+  const secs =
+    seconds % 60;
+
+  return [
+    hours,
+    minutes,
+    secs
+  ]
+  .map(
+    value=>
+      String(value).padStart(2,"0")
+  )
+  .join(":");
+}
+
+
+function updateTimer(){
+
+  if(!state.timer.running){
+    return;
+  }
+
+  state.timer.elapsed =
+    Math.floor(
+      (Date.now() -
+       state.timer.startedAt) / 1000
+    );
+
+  $("timerDisplay").textContent =
+    timerDisplay(
+      state.timer.elapsed
+    );
+}
+
+
+function startTimer(){
+
+  const bookId =
+    $("sessionBook").value;
+
+  if(!bookId){
+
+    showToast(
+      "Select a book before starting."
+    );
+
+    showPage("sessions");
+
+    return;
+  }
+
+  state.timer.bookId =
+    bookId;
+
+  state.timer.startedAt =
+    Date.now();
+
+  state.timer.elapsed =
+    0;
+
+  state.timer.running =
+    true;
+
+  const book =
+    state.books.find(
+      b=>b.id===bookId
+    );
+
+  $("timerBookName").textContent =
+    book?.title ||
+    "Reading";
+
+  $("timerStart").textContent =
+    "Reading…";
+
+  $("timerStart").disabled =
+    true;
+
+  clearInterval(
+    state.timer.interval
+  );
+
+  state.timer.interval =
+    setInterval(
+      updateTimer,
+      1000
+    );
+
+  updateTimer();
+
+  showToast(
+    "Reading timer started. 📖"
+  );
+}
+
+
+async function stopTimer(){
+
+  if(!state.timer.running){
+    return;
+  }
+
+  const elapsed =
+    state.timer.elapsed;
+
+  const bookId =
+    state.timer.bookId;
+
+  state.timer.running =
+    false;
+
+  clearInterval(
+    state.timer.interval
+  );
+
+  state.timer.interval =
+    null;
+
+  $("timerStart").disabled =
+    false;
+
+  $("timerStart").textContent =
+    "Start";
+
+  $("timerDisplay").textContent =
+    timerDisplay(0);
+
+  state.timer.elapsed =
+    0;
+
+  state.timer.bookId =
+    null;
+
+  if(elapsed < 10){
+    return;
+  }
+
+  const minutes =
+    Math.max(
+      1,
+      Math.round(elapsed / 60)
+    );
+
+  $("sessionBook").value =
+    bookId;
+
+  $("sessionMinutes").value =
+    minutes;
+
+  $("sessionPages").value =
+    0;
+
+  $("sessionDate").value =
+    today();
+
+  showToast(
+    `${minutes} minutes recorded in the session form.`
+  );
+}
+
+
+/* ============================================================
+   GOALS
+============================================================ */
+
+async function saveGoals(event){
+
+  event.preventDefault();
+
+  try{
+
+    const payload = {
+
+      user_id:state.user.id,
+
+      year:
+        new Date().getFullYear(),
+
+      books_target:
+        Math.max(
+          1,
+          Number(
+            $("goalBooks").value || 1
+          )
+        ),
+
+      pages_target:
+        Math.max(
+          1,
+          Number(
+            $("goalPages").value || 1
+          )
+        ),
+
+      minutes_target:
+        Math.max(
+          1,
+          Number(
+            $("goalMinutes").value || 1
+          )
+        )
+    };
+
+
+    const {
+      data,
+      error
+    } = await supabaseClient
+      .from("goals")
+      .upsert(
+        payload,
+        {
+          onConflict:
+            "user_id,year"
+        }
+      )
+      .select()
+      .single();
+
+    if(error) throw error;
+
+    state.goals =
+      data;
+
+    renderAll();
+
+    showToast(
+      "Reading goals updated. 🎯"
+    );
+
+  }catch(error){
+
+    showError(error);
+
+  }
+}
+
+
+function goalMetrics(){
+
+  const year =
+    new Date().getFullYear();
+
+  const books =
+    state.books.filter(
+      book=>
+        book.status === "completed" &&
+        book.finish_date &&
+        new Date(
+          book.finish_date
+        ).getFullYear() === year
+    ).length;
+
+  const pages =
+    state.sessions
+      .filter(
+        s=>
+          new Date(
+            s.reading_date
+          ).getFullYear() === year
+      )
+      .reduce(
+        (sum,s)=>
+          sum + Number(s.pages || 0),
+        0
+      );
+
+  const minutes =
+    state.sessions
+      .filter(
+        s=>
+          new Date(
+            s.reading_date
+          ).getFullYear() === year
+      )
+      .reduce(
+        (sum,s)=>
+          sum + Number(s.minutes || 0),
+        0
+      );
+
+  return {
+    books,
+    pages,
+    minutes
+  };
+}
+
+
+/* ============================================================
+   HIGHLIGHTS
+============================================================ */
+
+async function saveHighlight(event){
+
+  event.preventDefault();
+
+  try{
+
+    const payload = {
+
+      user_id:
+        state.user.id,
+
+      book_id:
+        $("highlightBook").value,
+
+      text:
+        $("highlightText")
+          .value
+          .trim(),
+
+      page:
+        Number(
+          $("highlightPage").value || 0
+        ),
+
+      note:
+        $("highlightNote")
+          .value
+          .trim(),
+
+      color:
+        $("highlightColor").value
+    };
+
+    const {
+      data,
+      error
+    } = await supabaseClient
+      .from("highlights")
+      .insert(payload)
+      .select()
+      .single();
+
+    if(error) throw error;
+
+    state.highlights.unshift(data);
+
+    $("highlightForm").reset();
+
+    closeModal(
+      "highlightModal"
+    );
+
+    renderHighlights();
+
+    showToast(
+      "Highlight saved. ✨"
+    );
+
+  }catch(error){
+
+    showError(error);
+
+  }
+}
+
+
+async function deleteHighlight(id){
+
+  try{
+
+    const {
+      error
+    } = await supabaseClient
+      .from("highlights")
+      .delete()
+      .eq("id",id)
+      .eq("user_id",state.user.id);
+
+    if(error) throw error;
+
+    state.highlights =
+      state.highlights.filter(
+        h=>h.id!==id
+      );
+
+    renderHighlights();
+
+    showToast(
+      "Highlight removed."
+    );
+
+  }catch(error){
+
+    showError(error);
+
+  }
+}
+
+
+/* ============================================================
+   NAVIGATION
+============================================================ */
+
+function showPage(page){
+
+  document
+    .querySelectorAll(".page")
+    .forEach(
+      section=>
+        section.classList.remove(
+          "active"
+        )
+    );
+
+  const target =
+    $(`page-${page}`);
+
+  if(!target){
+    return;
+  }
+
+  target.classList.add(
+    "active"
+  );
+
+
+  document
+    .querySelectorAll(".nav button")
+    .forEach(
+      button=>
+        button.classList.toggle(
+          "active",
+          button.dataset.page === page
+        )
+    );
+
+
+  document
+    .querySelectorAll(".bottom-nav button")
+    .forEach(
+      button=>
+        button.classList.toggle(
+          "active",
+          button.dataset.page === page
+        )
+    );
+
+
+  const titleMap = {
+
+    dashboard:"Dashboard",
+    library:"My Library",
+    sessions:"Reading Sessions",
+    goals:"Reading Goals",
+    statistics:"Statistics",
+    calendar:"Reading Calendar",
+    notes:"Notes & Highlights",
+    profile:"Profile"
+
+  };
+
+
+  $("pageTitle").textContent =
+    titleMap[page] ||
+    "Reading Garden";
+
+
+  $("sidebar")
+    .classList.remove("open");
+
+}
+
+
+document
+  .querySelectorAll(
+    ".nav button,.bottom-nav button"
+  )
+  .forEach(
+    button=>{
+      button.addEventListener(
+        "click",
+        ()=>{
+          showPage(
+            button.dataset.page
+          );
+        }
+      );
+    }
+  );
+
+
+/* ============================================================
+   RENDER DASHBOARD
+============================================================ */
+
+function renderDashboard(){
+
+  const completed =
+    state.books.filter(
+      b=>b.status==="completed"
+    ).length;
+
+  const reading =
+    state.books.filter(
+      b=>b.status==="reading"
+    ).length;
+
+  const pages =
+    state.sessions.reduce(
+      (sum,s)=>
+        sum + Number(s.pages || 0),
+      0
+    );
+
+  $("statBooks").textContent =
+    formatNumber(
+      state.books.length
+    );
+
+  $("statReading").textContent =
+    formatNumber(reading);
+
+  $("statCompleted").textContent =
+    formatNumber(completed);
+
+  $("statPages").textContent =
+    formatNumber(pages);
+
+  $("statStreak").textContent =
+    formatNumber(
+      calculateStreak()
+    );
+
+
+  const readingBooks =
+    state.books
+      .filter(
+        b=>b.status==="reading"
+      )
+      .slice(0,4);
+
+  $("dashboardReading").innerHTML =
+    readingBooks.length
+      ? readingBooks
+          .map(bookCard)
+          .join("")
+      : `
+        <div class="empty">
+          🌱 Start a book to grow your garden.
+        </div>
+      `;
+
+
+  renderDashboardGoal();
+  renderRecentSessions();
+}
+
+
+function renderDashboardGoal(){
+
+  const goal =
+    state.goals || {
+      books_target:24,
+      pages_target:5000,
+      minutes_target:10000
+    };
+
+  const metrics =
+    goalMetrics();
+
+  const percent =
+    Math.min(
+      100,
+      metrics.books /
+      Math.max(
+        1,
+        goal.books_target
+      ) * 100
+    );
+
+
+  $("dashboardGoal").innerHTML = `
+
+    <div
+      style="
+        font-size:31px;
+        font-weight:850
+      "
+    >
+      ${formatNumber(metrics.books)}
+
+      <span
+        class="muted"
+        style="font-size:13px"
+      >
+        /
+        ${formatNumber(
+          goal.books_target
+        )}
+        books
+      </span>
+
+    </div>
+
+    <div
+      class="progress"
+      style="height:11px"
+    >
+      <span
+        style="width:${percent}%"
+      ></span>
+    </div>
+
+    <div class="muted">
+      ${Math.round(percent)}%
+      of your yearly book goal
+    </div>
+
+  `;
+}
+
+
+function renderRecentSessions(){
+
+  const sessions =
+    [...state.sessions]
+      .sort(
+        (a,b)=>
+          new Date(b.reading_date) -
+          new Date(a.reading_date)
+      )
+      .slice(0,5);
+
+  $("recentSessions").innerHTML =
+    sessions.length
+      ? `
+        <div class="session-list">
+          ${sessions.map(
+            sessionHTML
+          ).join("")}
+        </div>
+      `
+      : `
+        <div class="empty">
+          No reading activity yet.
+        </div>
+      `;
+}
+
+
+/* ============================================================
+   RENDER GOALS
+============================================================ */
+
+function renderGoals(){
+
+  const goal =
+    state.goals || {
+      books_target:24,
+      pages_target:5000,
+      minutes_target:10000
+    };
+
+  $("goalBooks").value =
+    goal.books_target;
+
+  $("goalPages").value =
+    goal.pages_target;
+
+  $("goalMinutes").value =
+    goal.minutes_target;
+
+
+  const metrics =
+    goalMetrics();
+
+
+  const rows = [
+
+    [
+      "📚 Books",
+      metrics.books,
+      goal.books_target
+    ],
+
+    [
+      "📄 Pages",
+      metrics.pages,
+      goal.pages_target
+    ],
+
+    [
+      "⏱️ Minutes",
+      metrics.minutes,
+      goal.minutes_target
+    ]
+
+  ];
+
+
+  $("goalProgress").innerHTML =
+    rows.map(
+      ([name,current,target])=>{
+
+        const percent =
+          Math.min(
+            100,
+            current /
+            Math.max(
+              1,
+              target
+            ) * 100
+          );
+
+        return `
+
+          <div class="goal">
+
+            <div class="goal-top">
+
+              <span class="goal-name">
+                ${name}
+              </span>
+
+              <span>
+                ${formatNumber(current)}
+                /
+                ${formatNumber(target)}
+              </span>
+
+            </div>
+
+            <div class="progress">
+              <span
+                style="width:${percent}%"
+              ></span>
+            </div>
+
+            <div class="muted">
+              ${Math.round(percent)}%
+              complete
+            </div>
+
+          </div>
+
+        `;
+
+      }
+    ).join("");
+}
+
+
+/* ============================================================
+   STATISTICS
+============================================================ */
+
+function renderStatistics(){
+
+  const rated =
+    state.books.filter(
+      b=>Number(b.rating)>0
+    );
+
+  const avgRating =
+    rated.length
+      ? rated.reduce(
+          (sum,b)=>
+            sum + Number(b.rating),
+          0
+        ) / rated.length
+      : 0;
+
+  const pageBooks =
+    state.books.filter(
+      b=>Number(b.page_count)>0
+    );
+
+  const avgPages =
+    pageBooks.length
+      ? pageBooks.reduce(
+          (sum,b)=>
+            sum + Number(b.page_count),
+          0
+        ) / pageBooks.length
+      : 0;
+
+  const minutes =
+    state.sessions.reduce(
+      (sum,s)=>
+        sum + Number(s.minutes || 0),
+      0
+    );
+
+  const completed =
+    state.books.filter(
+      b=>b.status==="completed"
+    ).length;
+
+  const completion =
+    state.books.length
+      ? completed /
+        state.books.length *
+        100
+      : 0;
+
+  const favorites =
+    state.books.filter(
+      b=>b.favorite
+    ).length;
+
+
+  $("avgRating").textContent =
+    avgRating.toFixed(1);
+
+  $("avgPages").textContent =
+    Math.round(avgPages);
+
+  $("totalMinutes").textContent =
+    formatNumber(minutes);
+
+  $("completionRate").textContent =
+    Math.round(completion) + "%";
+
+  $("favoriteCount").textContent =
+    formatNumber(favorites);
+
+
+  const year =
+    new Date().getFullYear();
+
+  const monthly =
+    Array.from(
+      {length:12},
+      (_,month)=>
+        state.books.filter(
+          book=>
+            book.status==="completed" &&
+            book.finish_date &&
+            new Date(
+              book.finish_date
+            ).getFullYear()===year &&
+            new Date(
+              book.finish_date
+            ).getMonth()===month
+        ).length
+    );
+
+  const max =
+    Math.max(
+      1,
+      ...monthly
+    );
+
+
+  $("monthlyChart").innerHTML =
+    monthly.map(
+      (value,index)=>`
+
+        <div
+          class="bar"
+          style="
+            height:${Math.max(
+              4,
+              value/max*100
+            )}%
+          "
+        >
+
+          <small>
+            ${
+              new Date(
+                year,
+                index,
+                1
+              ).toLocaleString(
+                "en",
+                {month:"short"}
+              )
+            }
+          </small>
+
+        </div>
+
+      `
+    ).join("");
+
+
+  const genres = {};
+
+  state.books.forEach(
+    book=>{
+
+      const genre =
+        book.genre?.trim() ||
+        "Uncategorized";
+
+      genres[genre] =
+        (genres[genre] || 0) + 1;
+
+    }
+  );
+
+
+  const sorted =
+    Object.entries(genres)
+      .sort(
+        (a,b)=>b[1]-a[1]
+      );
+
+
+  $("genreStats").innerHTML =
+    sorted.length
+      ? sorted.map(
+          ([genre,count])=>`
+
+            <div
+              style="
+                margin-bottom:14px
+              "
+            >
+
+              <div
+                style="
+                  display:flex;
+                  justify-content:space-between
+                "
+              >
+
+                <span>
+                  ${escapeHTML(genre)}
+                </span>
+
+                <strong>
+                  ${count}
+                </strong>
+
+              </div>
+
+              <div class="progress">
+                <span
+                  style="
+                    width:${
+                      count /
+                      Math.max(
+                        1,
+                        state.books.length
+                      ) * 100
+                    }%
+                  "
+                ></span>
+              </div>
+
+            </div>
+
+          `
+        ).join("")
+      : `
+        <div class="empty">
+          Add books to see genre statistics.
+        </div>
+      `;
+}
+
+
+/* ============================================================
+   CALENDAR
+============================================================ */
+
+function renderCalendar(){
+
+  const date =
+    state.calendarDate;
+
+  const year =
+    date.getFullYear();
+
+  const month =
+    date.getMonth();
+
+  $("calendarTitle").textContent =
+    date.toLocaleString(
+      "en",
+      {
+        month:"long",
+        year:"numeric"
+      }
+    );
+
+
+  const first =
+    new Date(
+      year,
+      month,
+      1
+    );
+
+  const last =
+    new Date(
+      year,
+      month + 1,
+      0
+    );
+
+
+  let html = `
+
+    ${
+      [
+        "Sun",
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat"
+      ]
+      .map(
+        day=>
+          `<div class="cal-head">${day}</div>`
+      )
+      .join("")
+    }
+
+  `;
+
+
+  for(
+    let i=0;
+    i<first.getDay();
+    i++
+  ){
+
+    html += "<div></div>";
+
+  }
+
+
+  for(
+    let day=1;
+    day<=last.getDate();
+    day++
+  ){
+
+    const dateString =
+      `${year}-${
+        String(month+1)
+          .padStart(2,"0")
+      }-${
+        String(day)
+          .padStart(2,"0")
+      }`;
+
+
+    const sessions =
+      state.sessions.filter(
+        s=>
+          s.reading_date ===
+          dateString
+      );
+
+
+    const pages =
+      sessions.reduce(
+        (sum,s)=>
+          sum +
+          Number(s.pages || 0),
+        0
+      );
+
+
+    const minutes =
+      sessions.reduce(
+        (sum,s)=>
+          sum +
+          Number(s.minutes || 0),
+        0
+      );
+
+
+    html += `
+
+      <div
+        class="day ${
+          sessions.length
+            ? "read"
+            : ""
+        }"
+      >
+
+        <strong>${day}</strong>
+
+        ${
+          sessions.length
+            ? `
+              <div class="minutes">
+                📖 ${pages}
+                <br>
+                ⏱ ${minutes}m
+              </div>
+            `
+            : ""
+        }
+
+      </div>
+
+    `;
+
+  }
+
+
+  $("calendarGrid").innerHTML =
+    html;
+}
+
+
+/* ============================================================
+   NOTES / HIGHLIGHTS
+============================================================ */
+
+function renderNotes(){
+
+  const books =
+    state.books.filter(
+      book=>
+        book.notes ||
+        book.review
+    );
+
+
+  $("notesList").innerHTML =
+    books.length
+      ? books.map(
+          book=>`
+
+            <div class="goal">
+
+              <div class="goal-top">
+
+                <strong>
+                  ${escapeHTML(
+                    book.title
+                  )}
+                </strong>
+
+                <button
+                  class="btn btn-secondary btn-small"
+                  onclick="
+                    editBook('${book.id}')
+                  "
+                >
+                  Edit
+                </button>
+
+              </div>
+
+
+              ${
+                book.review
+                  ? `
+                    <p>
+                      <strong>
+                        Review
+                      </strong>
+                      <br>
+                      ${escapeHTML(
+                        book.review
+                      )}
+                    </p>
+                  `
+                  : ""
+              }
+
+
+              ${
+                book.notes
+                  ? `
+                    <p>
+                      <strong>
+                        Notes
+                      </strong>
+                      <br>
+                      ${escapeHTML(
+                        book.notes
+                      )}
+                    </p>
+                  `
+                  : ""
+              }
+
+            </div>
+
+          `
+        ).join("")
+      : `
+        <div class="empty">
+          No notes yet.
+        </div>
+      `;
+
+  renderHighlights();
+}
+
+
+function renderHighlights(){
+
+  const highlights =
+    state.highlights || [];
+
+  $("highlightList").innerHTML =
+    highlights.length
+      ? highlights.map(
+          highlight=>{
+
+            const book =
+              state.books.find(
+                b=>
+                  b.id ===
+                  highlight.book_id
+              );
+
+            return `
+
+              <div
+                class="goal"
+                style="
+                  border-left:
+                    5px solid
+                    ${
+                      COLOR_MAP[
+                        highlight.color
+                      ] ||
+                      "var(--yellow)"
+                    };
+                "
+              >
+
+                <div class="goal-top">
+
+                  <strong>
+                    ${escapeHTML(
+                      book?.title ||
+                      "Book"
+                    )}
+                  </strong>
+
+                  <button
+                    class="btn btn-danger btn-small"
+                    onclick="
+                      deleteHighlight(
+                        '${highlight.id}'
+                      )
+                    "
+                  >
+                    Delete
+                  </button>
+
+                </div>
+
+                <p>
+                  “${escapeHTML(
+                    highlight.text
+                  )}”
+                </p>
+
+                ${
+                  highlight.page
+                    ? `
+                      <small class="muted">
+                        Page
+                        ${highlight.page}
+                      </small>
+                    `
+                    : ""
+                }
+
+                ${
+                  highlight.note
+                    ? `
+                      <p class="muted">
+                        ${escapeHTML(
+                          highlight.note
+                        )}
+                      </p>
+                    `
+                    : ""
+                }
+
+              </div>
+
+            `;
+
+          }
+        ).join("")
+      : `
+        <div class="empty">
+          ✨ Save the ideas you want to remember.
+        </div>
+      `;
+}
+
+
+/* ============================================================
+   RENDER ALL
+============================================================ */
+
+function renderAll(){
+
+  populateBookSelects();
+
+  renderDashboard();
+
+  renderLibrary();
+
+  renderSessions();
+
+  renderGoals();
+
+  renderStatistics();
+
+  renderCalendar();
+
+  renderNotes();
+
+  updateUserUI();
+
+}
+
+
+/* ============================================================
+   EVENT LISTENERS
+============================================================ */
+
+$("authForm")
+  .addEventListener(
+    "submit",
+    handleAuth
+  );
+
+
+$("authModeToggle")
+  .addEventListener(
+    "click",
+    ()=>{
+      setAuthMode(
+        state.authMode === "login"
+          ? "signup"
+          : "login"
+      );
+    }
+  );
+
+
+$("forgotButton")
+  .addEventListener(
+    "click",
+    resetPassword
+  );
+
+
+$("passwordToggle")
+  .addEventListener(
+    "click",
+    ()=>{
+
+      const input =
+        $("authPassword");
+
+      input.type =
+        input.type === "password"
+          ? "text"
+          : "password";
+
+    }
+  );
+
+
+$("logoutButton")
+  .addEventListener(
+    "click",
+    logout
+  );
+
+
+$("profileLogout")
+  .addEventListener(
+    "click",
+    logout
+  );
+
+
+$("profileForm")
+  .addEventListener(
+    "submit",
+    saveProfile
+  );
+
+
+$("themeButton")
+  .addEventListener(
+    "click",
+    ()=>{
+
+      const theme =
+        currentTheme() === "dark"
+          ? "light"
+          : "dark";
+
+      applyTheme(theme);
+
+    }
+  );
+
+
+$("topAddBook")
+  .addEventListener(
+    "click",
+    ()=>{
+      openBookForm();
+    }
+  );
+
+
+$("libraryAdd")
+  .addEventListener(
+    "click",
+    ()=>{
+      openBookForm();
+    }
+  );
+
+
+$("bookForm")
+  .addEventListener(
+    "submit",
+    saveBook
+  );
+
+
+$("sessionForm")
+  .addEventListener(
+    "submit",
+    saveSession
+  );
+
+
+$("goalForm")
+  .addEventListener(
+    "submit",
+    saveGoals
+  );
+
+
+$("highlightForm")
+  .addEventListener(
+    "submit",
+    saveHighlight
+  );
+
+
+$("addHighlightButton")
+  .addEventListener(
+    "click",
+    ()=>{
+      openModal(
+        "highlightModal"
+      );
+    }
+  );
+
+
+$("bookSearch")
+  .addEventListener(
+    "input",
+    renderLibrary
+  );
+
+
+$("bookStatusFilter")
+  .addEventListener(
+    "change",
+    renderLibrary
+  );
+
+
+$("bookSort")
+  .addEventListener(
+    "change",
+    renderLibrary
+  );
+
+
+$("sessionDate").value =
+  today();
+
+
+$("timerStart")
+  .addEventListener(
+    "click",
+    startTimer
+  );
+
+
+$("timerStop")
+  .addEventListener(
+    "click",
+    stopTimer
+  );
+
+
+$("prevMonth")
+  .addEventListener(
+    "click",
+    ()=>{
+
+      state.calendarDate.setMonth(
+        state.calendarDate.getMonth()-1
+      );
+
+      renderCalendar();
+
+    }
+  );
+
+
+$("nextMonth")
+  .addEventListener(
+    "click",
+    ()=>{
+
+      state.calendarDate.setMonth(
+        state.calendarDate.getMonth()+1
+      );
+
+      renderCalendar();
+
+    }
+  );
+
+
+$("mobileMenuButton")
+  .addEventListener(
+    "click",
+    ()=>{
+
+      $("sidebar")
+        .classList.toggle(
+          "open"
+        );
+
+    }
+  );
+
+
+document
+  .querySelectorAll(
+    "[data-close]"
+  )
+  .forEach(
+    button=>{
+
+      button.addEventListener(
+        "click",
+        ()=>{
+          closeModal(
+            button.dataset.close
+          );
+        }
+      );
+
+    }
+  );
+
+
+document
+  .querySelectorAll(".modal")
+  .forEach(
+    modal=>{
+
+      modal.addEventListener(
+        "click",
+        event=>{
+
+          if(
+            event.target === modal
+          ){
+
+            modal.classList.remove(
+              "open"
+            );
+
+          }
+
+        }
+      );
+
+    }
+  );
+
+
+/* ============================================================
+   START
+============================================================ */
+
+setAuthMode("login");
+
+boot();
+
+</script>
+
+</body>
+</html>
