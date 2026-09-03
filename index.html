@@ -964,34 +964,146 @@ textarea:focus{
 
 .calendar{
   display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:6px;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:7px;
 }
 
 .cal-head{
-  padding:5px;
+  padding:7px 4px;
   color:var(--muted);
   text-align:center;
   font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
 }
 
 .day{
-  min-height:65px;
-  padding:7px;
+  position:relative;
+  min-height:82px;
+  padding:8px;
   border:1px solid var(--border);
-  border-radius:9px;
+  border-radius:12px;
   font-size:11px;
+  background:var(--surface);
+  cursor:pointer;
+  transition:
+    transform .15s ease,
+    border-color .15s ease,
+    background .15s ease,
+    box-shadow .15s ease;
+}
+
+.day:hover{
+  transform:translateY(-2px);
+  border-color:var(--primary);
+  box-shadow:0 8px 20px rgba(63,118,85,.10);
 }
 
 .day.read{
-  background:rgba(120,169,107,.13);
-  border-color:rgba(120,169,107,.35);
+  background:rgba(120,169,107,.15);
+  border-color:rgba(120,169,107,.45);
+}
+
+.day.book-active{
+  background:
+    linear-gradient(
+      145deg,
+      rgba(120,169,107,.12),
+      rgba(89,145,110,.05)
+    );
+  border-color:rgba(120,169,107,.32);
+}
+
+.day.today{
+  outline:2px solid var(--primary);
+  outline-offset:1px;
+}
+
+.day.empty-day{
+  cursor:pointer;
+}
+
+.day.empty-day:hover{
+  background:var(--surface2);
+}
+
+.day-number{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:4px;
+}
+
+.day-number strong{
+  font-size:12px;
+}
+
+.day-today-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--primary);
+}
+
+.day-book{
+  margin-top:6px;
+  padding:3px 5px;
+  border-radius:6px;
+  background:rgba(63,118,85,.10);
+  color:var(--primary);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:9px;
+  font-weight:750;
+}
+
+.day-book-more{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:8px;
 }
 
 .day .minutes{
   margin-top:5px;
   color:var(--primary);
   font-size:9px;
+  line-height:1.45;
+  font-weight:700;
+}
+
+.calendar-legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:14px;
+  color:var(--muted);
+  font-size:10px;
+}
+
+.calendar-legend span{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+}
+
+.legend-dot{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  display:inline-block;
+}
+
+.legend-session{
+  background:var(--primary);
+}
+
+.legend-book{
+  background:var(--green);
+}
+
+.legend-today{
+  background:var(--yellow);
 }
 
 .timer{
@@ -1851,28 +1963,69 @@ textarea:focus{
 
           <div class="section-title">
 
-            <button
-              class="btn btn-secondary btn-small"
-              id="prevMonth"
-            >
-              ←
-            </button>
+  <h3 id="calendarTitle">
+    Calendar
+  </h3>
 
-            <h3 id="calendarTitle"></h3>
+  <div
+    style="
+      display:flex;
+      gap:6px;
+      align-items:center;
+    "
+  >
 
-            <button
-              class="btn btn-secondary btn-small"
-              id="nextMonth"
-            >
-              →
-            </button>
+    <button
+      class="btn btn-secondary btn-small"
+      id="calendarToday"
+      type="button"
+    >
+      Today
+    </button>
 
-          </div>
+    <button
+      class="btn btn-secondary btn-small"
+      id="prevMonth"
+      type="button"
+    >
+      ←
+    </button>
+
+    <button
+      class="btn btn-secondary btn-small"
+      id="nextMonth"
+      type="button"
+    >
+      →
+    </button>
+
+  </div>
+
+</div>
 
           <div
             id="calendarGrid"
             class="calendar"
           ></div>
+
+          <div class="calendar-legend">
+
+  <span>
+    <i class="legend-dot legend-session"></i>
+    Reading session
+  </span>
+
+  <span>
+    <i class="legend-dot legend-book"></i>
+    Book reading period
+  </span>
+
+  <span>
+    <i class="legend-dot legend-today"></i>
+    Today
+  </span>
+
+</div>
 
         </div>
 
@@ -2223,6 +2376,39 @@ textarea:focus{
   </div>
 
 </div>
+
+
+<!-- CALENDAR DAY DETAIL MODAL -->
+
+<div
+  class="modal"
+  id="calendarDayModal"
+>
+
+  <div class="modal-box">
+
+    <div class="modal-head">
+
+      <h2 id="calendarDayTitle">
+        Reading Activity
+      </h2>
+
+      <button
+        class="close"
+        data-close="calendarDayModal"
+        type="button"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div id="calendarDayContent"></div>
+
+  </div>
+
+</div>
+
 
 
 <!-- HIGHLIGHT MODAL -->
@@ -4555,10 +4741,9 @@ function showPage(page){
   document
     .querySelectorAll(".page")
     .forEach(
-      section=>
-        section.classList.remove(
-          "active"
-        )
+      section=>{
+        section.classList.remove("active");
+      }
     );
 
   const target =
@@ -4568,30 +4753,30 @@ function showPage(page){
     return;
   }
 
-  target.classList.add(
-    "active"
-  );
+  target.classList.add("active");
 
 
   document
     .querySelectorAll(".nav button")
     .forEach(
-      button=>
+      button=>{
         button.classList.toggle(
           "active",
           button.dataset.page === page
-        )
+        );
+      }
     );
 
 
   document
     .querySelectorAll(".bottom-nav button")
     .forEach(
-      button=>
+      button=>{
         button.classList.toggle(
           "active",
           button.dataset.page === page
-        )
+        );
+      }
     );
 
 
@@ -4616,6 +4801,22 @@ function showPage(page){
 
   $("sidebar")
     .classList.remove("open");
+
+
+  /*
+   * Render page-specific content whenever the page
+   * becomes visible.
+   *
+   * This is especially important for the calendar because
+   * its HTML container starts empty and is populated by
+   * renderCalendar().
+   */
+
+  if(page === "calendar"){
+
+    renderCalendar();
+
+  }
 
 }
 
@@ -5126,6 +5327,9 @@ function renderCalendar(){
   const month =
     date.getMonth();
 
+  const todayString =
+    today();
+
   $("calendarTitle").textContent =
     date.toLocaleString(
       "en",
@@ -5165,7 +5369,9 @@ function renderCalendar(){
       ]
       .map(
         day=>
-          `<div class="cal-head">${day}</div>`
+          `<div class="cal-head">
+            ${day}
+          </div>`
       )
       .join("")
     }
@@ -5173,17 +5379,25 @@ function renderCalendar(){
   `;
 
 
+  /*
+   * Empty cells before the first day.
+   */
   for(
     let i=0;
     i<first.getDay();
     i++
   ){
 
-    html += "<div></div>";
+    html += `
+      <div class="day empty-day"></div>
+    `;
 
   }
 
 
+  /*
+   * Render every day.
+   */
   for(
     let day=1;
     day<=last.getDate();
@@ -5200,57 +5414,241 @@ function renderCalendar(){
       }`;
 
 
+    /*
+     * Formal reading sessions for this date.
+     */
     const sessions =
       state.sessions.filter(
-        s=>
-          s.reading_date ===
+        session=>
+          String(session.reading_date)
+            .slice(0,10) ===
           dateString
       );
 
 
+    /*
+     * Books whose reading period covers this date.
+     *
+     * This means a book can appear on the calendar
+     * even if the user never created a formal session.
+     */
+    const activeBooks =
+      state.books.filter(
+        book=>{
+
+          const start =
+            book.start_date
+              ? String(book.start_date)
+                  .slice(0,10)
+              : null;
+
+          let end =
+            book.finish_date
+              ? String(book.finish_date)
+                  .slice(0,10)
+              : null;
+
+
+          /*
+           * A currently-reading book without a finish
+           * date remains active through today.
+           */
+          if(
+            !end &&
+            book.status === "reading"
+          ){
+
+            end =
+              todayString;
+
+          }
+
+
+          /*
+           * If there is no start date, don't invent
+           * a complete reading period.
+           */
+          if(!start){
+
+            return false;
+
+          }
+
+
+          if(!end){
+
+            return dateString === start;
+
+          }
+
+
+          return (
+            dateString >= start &&
+            dateString <= end
+          );
+
+        }
+      );
+
+
+    /*
+     * Books represented by the sessions but not
+     * necessarily covered by start/finish dates.
+     */
+    const sessionBooks =
+      sessions
+        .map(
+          session=>
+            state.books.find(
+              book=>
+                book.id ===
+                session.book_id
+            )
+        )
+        .filter(Boolean);
+
+
+    /*
+     * Combine both sources without duplicates.
+     */
+    const booksForDay = [
+      ...activeBooks,
+      ...sessionBooks
+    ].filter(
+      (book,index,array)=>
+        array.findIndex(
+          item=>
+            item.id === book.id
+        ) === index
+    );
+
+
     const pages =
       sessions.reduce(
-        (sum,s)=>
+        (sum,session)=>
           sum +
-          Number(s.pages || 0),
+          Number(session.pages || 0),
         0
       );
 
 
     const minutes =
       sessions.reduce(
-        (sum,s)=>
+        (sum,session)=>
           sum +
-          Number(s.minutes || 0),
+          Number(session.minutes || 0),
         0
       );
 
 
+    const hasActivity =
+      sessions.length > 0 ||
+      booksForDay.length > 0;
+
+
+    const isToday =
+      dateString === todayString;
+
+
+    const classes = [
+      "day",
+      sessions.length
+        ? "read"
+        : "",
+      activeBooks.length
+        ? "book-active"
+        : "",
+      isToday
+        ? "today"
+        : ""
+    ]
+    .filter(Boolean)
+    .join(" ");
+
+
+    /*
+     * Show up to two book titles inside the cell.
+     */
+    const visibleBooks =
+      booksForDay.slice(0,2);
+
+
+    const bookHtml =
+      visibleBooks
+        .map(
+          book=>`
+
+            <div class="day-book">
+              📖
+              ${escapeHTML(
+                book.title ||
+                "Book"
+              )}
+            </div>
+
+          `
+        )
+        .join("");
+
+
+    const moreBooks =
+      booksForDay.length > 2
+        ? `
+          <div class="day-book-more">
+            +${booksForDay.length - 2}
+            more
+          </div>
+        `
+        : "";
+
+
+    const sessionHtml =
+      sessions.length
+        ? `
+          <div class="minutes">
+            📄 ${formatNumber(pages)}
+            <br>
+            ⏱ ${formatNumber(minutes)}m
+          </div>
+        `
+        : "";
+
+
     html += `
 
-      <div
-        class="day ${
-          sessions.length
-            ? "read"
-            : ""
-        }"
+      <button
+        type="button"
+        class="${classes}"
+        onclick="showCalendarDay('${dateString}')"
+        aria-label="Reading activity for ${dateString}"
       >
 
-        <strong>${day}</strong>
+        <div class="day-number">
 
-        ${
-          sessions.length
-            ? `
-              <div class="minutes">
-                📖 ${pages}
-                <br>
-                ⏱ ${minutes}m
-              </div>
-            `
-            : ""
-        }
+          <strong>
+            ${day}
+          </strong>
 
-      </div>
+          ${
+            isToday
+              ? `
+                <span
+                  class="day-today-dot"
+                  title="Today"
+                ></span>
+              `
+              : ""
+          }
+
+        </div>
+
+        ${bookHtml}
+
+        ${moreBooks}
+
+        ${sessionHtml}
+
+      </button>
 
     `;
 
@@ -5259,6 +5657,582 @@ function renderCalendar(){
 
   $("calendarGrid").innerHTML =
     html;
+
+}
+
+/*==================================================================
+      CALENDER DAY DETAILS
+====================================================================*/
+
+function showCalendarDay(dateString){
+
+  const sessions =
+    state.sessions.filter(
+      session=>
+        String(session.reading_date)
+          .slice(0,10) ===
+        dateString
+    );
+
+
+  const activeBooks =
+    state.books.filter(
+      book=>{
+
+        const start =
+          book.start_date
+            ? String(book.start_date)
+                .slice(0,10)
+            : null;
+
+        let end =
+          book.finish_date
+            ? String(book.finish_date)
+                .slice(0,10)
+            : null;
+
+
+        if(
+          !end &&
+          book.status === "reading"
+        ){
+
+          end =
+            today();
+
+        }
+
+
+        if(!start){
+
+          return false;
+
+        }
+
+
+        if(!end){
+
+          return dateString === start;
+
+        }
+
+
+        return (
+          dateString >= start &&
+          dateString <= end
+        );
+
+      }
+    );
+
+
+  const sessionBooks =
+    sessions
+      .map(
+        session=>
+          state.books.find(
+            book=>
+              book.id ===
+              session.book_id
+          )
+      )
+      .filter(Boolean);
+
+
+  const books = [
+    ...activeBooks,
+    ...sessionBooks
+  ].filter(
+    (book,index,array)=>
+      array.findIndex(
+        item=>
+          item.id === book.id
+      ) === index
+  );
+
+
+  const pages =
+    sessions.reduce(
+      (sum,session)=>
+        sum +
+        Number(session.pages || 0),
+      0
+    );
+
+
+  const minutes =
+    sessions.reduce(
+      (sum,session)=>
+        sum +
+        Number(session.minutes || 0),
+      0
+    );
+
+
+  const dateLabel =
+    new Date(
+      `${dateString}T12:00:00`
+    ).toLocaleDateString(
+      "en",
+      {
+        weekday:"long",
+        month:"long",
+        day:"numeric",
+        year:"numeric"
+      }
+    );
+
+
+  let html = `
+
+    <div class="calendar-detail">
+
+      <div
+        class="goal"
+        style="
+          margin-bottom:14px;
+          background:var(--surface2);
+        "
+      >
+
+        <div class="goal-top">
+
+          <strong>
+            📅 ${escapeHTML(dateLabel)}
+          </strong>
+
+          ${
+            dateString === today()
+              ? `
+                <span class="badge">
+                  Today
+                </span>
+              `
+              : ""
+          }
+
+        </div>
+
+
+        <div
+          style="
+            display:flex;
+            gap:14px;
+            flex-wrap:wrap;
+            margin-top:10px;
+          "
+        >
+
+          <span>
+            📚
+            <strong>
+              ${books.length}
+            </strong>
+            ${books.length === 1 ? "book" : "books"}
+          </span>
+
+          <span>
+            📄
+            <strong>
+              ${formatNumber(pages)}
+            </strong>
+            pages
+          </span>
+
+          <span>
+            ⏱️
+            <strong>
+              ${formatNumber(minutes)}
+            </strong>
+            min
+          </span>
+
+        </div>
+
+      </div>
+
+  `;
+
+
+  /*
+   * Books active on this date.
+   */
+  if(books.length){
+
+    html += `
+
+      <h3
+        style="
+          margin:16px 0 9px;
+        "
+      >
+        📖 Books
+      </h3>
+
+    `;
+
+
+    html += books
+      .map(
+        book=>{
+
+          const sessionCount =
+            sessions.filter(
+              session=>
+                session.book_id ===
+                book.id
+            ).length;
+
+
+          const progress =
+            Number(book.page_count || 0) > 0
+              ? Math.min(
+                  100,
+                  Number(book.current_page || 0) /
+                  Number(book.page_count) *
+                  100
+                )
+              : 0;
+
+
+          return `
+
+            <div class="goal">
+
+              <div class="goal-top">
+
+                <div>
+
+                  <strong>
+                    ${escapeHTML(
+                      book.title
+                    )}
+                  </strong>
+
+                  <div class="muted">
+                    ${escapeHTML(
+                      book.author ||
+                      "Unknown author"
+                    )}
+                  </div>
+
+                </div>
+
+
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-small"
+                  onclick="
+                    closeModal('calendarDayModal');
+                    viewBook('${book.id}');
+                  "
+                >
+                  View
+                </button>
+
+              </div>
+
+
+              <div
+                style="
+                  display:flex;
+                  gap:8px;
+                  flex-wrap:wrap;
+                  margin-top:9px;
+                "
+              >
+
+                <span class="badge">
+                  ${
+                    sessionCount
+                      ? "Reading session"
+                      : "Reading period"
+                  }
+                </span>
+
+                ${
+                  book.status
+                    ? `
+                      <span class="badge">
+                        ${
+                          STATUS_LABELS[
+                            book.status
+                          ] ||
+                          book.status
+                        }
+                      </span>
+                    `
+                    : ""
+                }
+
+              </div>
+
+
+              ${
+                book.page_count > 0
+                  ? `
+
+                    <div
+                      style="
+                        margin-top:10px;
+                      "
+                    >
+
+                      <div
+                        style="
+                          display:flex;
+                          justify-content:space-between;
+                          font-size:10px;
+                          color:var(--muted);
+                          margin-bottom:4px;
+                        "
+                      >
+
+                        <span>
+                          Progress
+                        </span>
+
+                        <span>
+                          ${formatNumber(
+                            book.current_page
+                          )}
+                          /
+                          ${formatNumber(
+                            book.page_count
+                          )}
+                        </span>
+
+                      </div>
+
+                      <div class="progress">
+                        <span
+                          style="
+                            width:${progress}%
+                          "
+                        ></span>
+                      </div>
+
+                    </div>
+
+                  `
+                  : ""
+              }
+
+            </div>
+
+          `;
+
+        }
+      )
+      .join("");
+
+  }
+
+
+  /*
+   * Formal reading sessions.
+   */
+  if(sessions.length){
+
+    html += `
+
+      <h3
+        style="
+          margin:18px 0 9px;
+        "
+      >
+        ⏱️ Reading Sessions
+      </h3>
+
+      <div class="session-list">
+
+    `;
+
+
+    html += sessions
+      .map(
+        session=>{
+
+          const book =
+            state.books.find(
+              item=>
+                item.id ===
+                session.book_id
+            );
+
+
+          return `
+
+            <div class="session">
+
+              <div>
+
+                <strong>
+                  ${escapeHTML(
+                    book?.title ||
+                    "Unknown book"
+                  )}
+                </strong>
+
+                ${
+                  session.notes
+                    ? `
+                      <div class="muted">
+                        ${escapeHTML(
+                          session.notes
+                        )}
+                      </div>
+                    `
+                    : ""
+                }
+
+              </div>
+
+
+              <div style="text-align:right">
+
+                <strong>
+                  ${formatNumber(
+                    session.pages
+                  )}
+                  pages
+                </strong>
+
+                <div class="muted">
+                  ${formatNumber(
+                    session.minutes
+                  )}
+                  min
+                </div>
+
+              </div>
+
+            </div>
+
+          `;
+
+        }
+      )
+      .join("");
+
+
+    html += `
+
+      </div>
+
+    `;
+
+  }
+
+
+  /*
+   * Empty date.
+   */
+  if(
+    !books.length &&
+    !sessions.length
+  ){
+
+    html += `
+
+      <div class="empty">
+
+        <div style="font-size:35px">
+          🌱
+        </div>
+
+        <strong>
+          No reading activity
+        </strong>
+
+        <p>
+          Nothing is recorded for this day yet.
+        </p>
+
+      </div>
+
+    `;
+
+  }
+
+
+  /*
+   * Quick action for this exact date.
+   */
+  html += `
+
+    <div
+      style="
+        display:flex;
+        justify-content:flex-end;
+        margin-top:16px;
+      "
+    >
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        onclick="
+          closeModal('calendarDayModal');
+          openSessionForDate('${dateString}');
+        "
+      >
+        ＋ Add Reading Session
+      </button>
+
+    </div>
+
+  `;
+
+
+  html += `</div>`;
+
+
+  $("calendarDayTitle").textContent =
+    "Reading Activity";
+
+
+  $("calendarDayContent").innerHTML =
+    html;
+
+
+  openModal(
+    "calendarDayModal"
+  );
+
+}
+
+function openSessionForDate(dateString){
+
+  showPage("sessions");
+
+
+  $("sessionDate").value =
+    dateString;
+
+
+  const firstBook =
+    state.books.find(
+      book=>
+        book.status === "reading"
+    );
+
+
+  if(firstBook){
+
+    $("sessionBook").value =
+      firstBook.id;
+
+  }
+
+
+  $("sessionPages").focus();
+
+
+  showToast(
+    `Ready to record reading for ${dateString}. 📖`
+  );
+
 }
 
 
@@ -5670,6 +6644,18 @@ $("prevMonth")
     }
   );
 
+$("calendarToday")
+  .addEventListener(
+    "click",
+    ()=>{
+
+      state.calendarDate =
+        new Date();
+
+      renderCalendar();
+
+    }
+  );
 
 $("nextMonth")
   .addEventListener(
